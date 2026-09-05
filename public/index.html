@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Videha Literature Festival — books, journals, performance, scholarship and living Maithili culture from the Videha ecosystem.">
+  <title>Videha Literature Festival</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to festival</a>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Videha Literature Festival home">
+      <span class="brand-mark">वि</span><span>VIDEHA <i>Literature Festival</i></span>
+    </a>
+    <button class="menu-toggle" aria-expanded="false" aria-controls="primary-nav">Menu</button>
+    <nav id="primary-nav" aria-label="Primary navigation">
+      <a href="#books">Books</a><a href="#issues">Issues</a><a href="#stages">Festival stages</a><a href="#reader">Reading room</a><a href="#about">About</a>
+    </nav>
+    <div class="utility">
+      <button id="listenBtn" type="button">सुनू · Listen</button>
+      <button id="translateBtn" type="button">Translate with AI</button>
+      <button id="accessBtn" type="button">सहायक तकनीक</button>
+    </div>
+  </header>
+
+  <div id="accessPanel" class="panel" hidden aria-label="Accessibility settings">
+    <strong>Reading controls</strong>
+    <button data-access="size">Larger text</button><button data-access="spacing">More spacing</button><button data-access="contrast">High contrast</button><button data-access="reset">Reset</button>
+  </div>
+  <div id="translatePanel" class="panel translate-panel" hidden aria-label="Translate this site">
+    <label for="language">Translate this English page with Google Translate</label>
+    <select id="language"></select><button id="goTranslate">Open translation</button>
+  </div>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-copy">
+        <p class="eyebrow">VIDEHA MAITHILI eJOURNAL · ISSN 2229-547X</p>
+        <h1>A festival where an archive becomes a meeting place.</h1>
+        <p class="dek">Enter through books, periodicals, performance and ideas. Explore Gajendra Thakur’s cumulative works alongside the complete Videha and Sadeha issue archive—without losing the sources behind them.</p>
+        <div class="hero-actions"><a class="button primary" href="#books">Enter the book pavilion</a><a class="button ghost" href="#issues">Browse every issue</a></div>
+        <form class="global-search" role="search" id="globalSearchForm">
+          <label for="globalSearch">Search the whole festival</label>
+          <div><input id="globalSearch" type="search" placeholder="Try Panji, Vidyapati, philosophy, issue 307…" autocomplete="off"><button>Search</button></div>
+          <p id="searchStatus" aria-live="polite">Search books, series, Videha and Sadeha together.</p>
+        </form>
+      </div>
+      <figure class="hero-art"><img src="assets/VIDEHA%20LITERATURE%20FESTIVAL.png" alt="Videha Literature Festival artwork" fetchpriority="high"><figcaption>Language · literature · history · philosophy · performance</figcaption></figure>
+    </section>
+
+    <section class="stats" aria-label="Archive at a glance">
+      <article><strong id="videhaCount">447</strong><span>archived Videha issues</span></article>
+      <article><strong>37</strong><span>Sadeha issues</span></article>
+      <article><strong>100</strong><span>Parallel History volumes</span></article>
+      <article><strong>6</strong><span>Panji volumes</span></article>
+    </section>
+
+    <section class="four-doors" aria-labelledby="doorsTitle">
+      <div class="section-heading"><p class="eyebrow">ONE FESTIVAL · FOUR DOORS</p><h2 id="doorsTitle">Choose a way in</h2><p>Everything else is a path within these four spaces.</p></div>
+      <div class="door-grid">
+        <a href="#books"><span>01</span><h3>Book pavilion</h3><p>Authored, edited and translated works; cumulative series and independent books.</p></a>
+        <a href="#issues"><span>02</span><h3>Periodical archive</h3><p>Videha issues 1–447 plus the current issue, and Sadeha 1–37.</p></a>
+        <a href="#stages"><span>03</span><h3>Festival stages</h3><p>Poetry, theatre, children’s literature, criticism, translation and public thought.</p></a>
+        <a href="#reader"><span>04</span><h3>Reading room</h3><p>Listen, translate, enlarge, filter and follow verified publication links.</p></a>
+      </div>
+    </section>
+
+    <section id="books" class="books-section">
+      <div class="section-heading split"><div><p class="eyebrow">BOOK PAVILION</p><h2>Gajendra Thakur’s cumulative shelf</h2><p>Series are expanded into individually discoverable volumes. Publication links lead to Videha, Archive.org, Google Play, Amazon or Pothi where the source catalogue supplies them.</p></div><a class="text-link" href="https://www.videha.co.in/gajendra-thakur-samagra.htm">Open Gajendra Thakur Samagra ↗</a></div>
+      <div class="cover-rail" id="coverRail" aria-label="Selected book covers"></div>
+      <div class="filterbar" aria-label="Book filters">
+        <input id="bookSearch" type="search" placeholder="Search titles and series">
+        <select id="bookCategory"><option value="all">All shelves</option></select>
+        <button id="clearBooks">Clear</button>
+      </div>
+      <p class="result-count" id="bookCount" aria-live="polite"></p>
+      <div class="catalogue" id="bookGrid"></div>
+      <button class="load-more" id="moreBooks">Show more books</button>
+      <div class="archive-link-card"><img src="assets/VIDEHA%20ARCHIVE%20POTHI.jpg" alt="Videha Archive Pothi cover" loading="lazy"><div><p class="eyebrow">THE WIDER SHELF</p><h3>Videha Pothi</h3><p>The festival also opens onto the larger multi-author Videha book archive: poetry, fiction, criticism, reference works, children’s literature and translations.</p><a class="button ghost" href="https://www.videha.co.in/pothi.htm">Browse the complete Pothi catalogue ↗</a></div></div>
+    </section>
+
+    <section id="issues" class="issues-section">
+      <div class="section-heading split"><div><p class="eyebrow">PERIODICAL ARCHIVE</p><h2>Every issue, one searchable desk</h2><p>The issue records and dates come from the Videha archive manifest. Each result opens its archived publication file.</p></div><a class="text-link" href="https://www.videha.co.in/">Read the current Videha issue ↗</a></div>
+      <div class="issue-visual"><img src="assets/videha%20old%20issues.png" alt="Collage of historic Videha issue covers" loading="lazy"><div><strong>2008 → present</strong><span>A living, twice-monthly Maithili record</span></div></div>
+      <div class="filterbar">
+        <input id="issueSearch" type="search" inputmode="numeric" placeholder="Issue number, year or title">
+        <select id="publication"><option value="VIDEHA">Videha</option><option value="SADEHA">Sadeha</option><option value="all">Both publications</option></select>
+        <select id="issueYear"><option value="all">All years</option></select>
+      </div>
+      <p class="result-count" id="issueCount" aria-live="polite"></p>
+      <div class="issue-grid" id="issueGrid"></div>
+      <button class="load-more" id="moreIssues">Show more issues</button>
+    </section>
+
+    <section id="stages" class="stages-section">
+      <div class="section-heading"><p class="eyebrow">FESTIVAL STAGES</p><h2>Not a fictional schedule—a set of source-led programmes</h2><p>No invented dates or speakers. These stages organize real Videha collections for reading, teaching and future live programming.</p></div>
+      <div class="stage-grid" id="stageGrid"></div>
+    </section>
+
+    <section id="reader" class="reader-section">
+      <div class="reader-copy"><p class="eyebrow">ACCESSIBLE READING ROOM</p><h2>Read in the way that works for you.</h2><p>Select any passage on this page and use Listen. Translate the English interface into one of 41 languages through Google Translate. Reading controls increase size, spacing and contrast without changing the archive.</p><div class="reader-actions"><button id="readerListen">सुनू · Listen to this introduction</button><button id="readerTranslate">Translate with AI</button><button id="readerAccess">सहायक तकनीक · Assistive Tech</button></div><p class="note">Browser speech support varies. Translation opens Google Translate in a new tab so the original English remains available.</p></div>
+      <img src="assets/VIDEHA%20ARCHIVES%20FINAL.PNG" alt="Videha archive visual composition" loading="lazy">
+    </section>
+
+    <section id="about" class="about-section">
+      <p class="eyebrow">EDITORIAL IDENTITY</p><h2>Videha is the ground beneath the festival.</h2>
+      <p>© Gajendra Thakur, Editor, Videha Maithili eJournal, ISSN 2229-547X. This independent festival interface brings together books, translations, periodicals, criticism, theatre and research created or preserved within the Videha ecosystem.</p>
+      <div class="about-links"><a href="https://www.videha.co.in/">www.videha.co.in ↗</a><a href="https://videha-ejournal.github.io/videha/">Videha on GitHub Pages ↗</a><a href="https://www.youtube.com/@videha_ejournal/playlists">Audio, video & sign-language playlists ↗</a></div>
+    </section>
+  </main>
+  <footer><span>Videha Literature Festival</span><span id="lastUpdated"></span><a href="#top">Back to top ↑</a></footer>
+  <button id="toTop" class="to-top" aria-label="Back to top">↑</button>
+  <div id="searchDialog" class="search-dialog" hidden role="dialog" aria-modal="true" aria-labelledby="searchDialogTitle"><div class="search-dialog-card"><button id="closeSearch" class="dialog-close" aria-label="Close search">×</button><p class="eyebrow">WHOLE FESTIVAL SEARCH</p><h2 id="searchDialogTitle">Results</h2><div id="searchResults"></div></div></div>
+  <script src="app.js" type="module"></script>
+</body>
+</html>
