@@ -7,6 +7,7 @@ A responsive, accessible GitHub Pages festival and publication portal for the Vi
 - One-search access to books, series, Videha issues and Sadeha issues.
 - An expanded Gajendra Thakur shelf: four Parallel History tomes containing volumes 1–100 (Tome I: 1–25; Tome II: 26–50; Tome III: 51–75; Tome IV: 76–100), six Panji volumes, 37 illustrated children’s novels, nine bilingual plays, history, philosophy, language and translation works.
 - Parallel History and Panji cards expose their supplied Pothi, Kindle, Google Playbook, audiobook and online-reading editions separately; GitHub-hosted archive materials use clean GitHub Pages addresses.
+- The supplied publication register is represented as multi-format cards for History of Mithila–Vajji–Anga, Gadya Padya Bharti 1–2, two self-learning books, Gohi/Water-Burial and teaching courses, parallel grammar, four philosophical translations, the 13-book Sanskrit translation collection, Maithili and English children’s collections, criticism volumes, Rang-Sangam, Videha research articles and Parallel Philosophy.
 - Direct GitHub repository links for all 485 preserved Videha/Sadeha PDF files: 447 Videha issues and 38 Sadeha files covering issues 1–37, including issue 5’s second version.
 - A generated catalogue of book, study and learning editions already published in the `videha-ejournal.github.io`, `videha-quiz` and `videha` repositories.
 - Listen controls using browser speech, a 41-language Google Translate gateway, and reading accessibility controls.
