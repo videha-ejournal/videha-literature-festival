@@ -6,7 +6,8 @@ A responsive, accessible GitHub Pages festival and publication portal for the Vi
 
 - One-search access to books, series, Videha issues and Sadeha issues.
 - An expanded Gajendra Thakur shelf: 100 Parallel History volumes, six Panji volumes, 37 illustrated children’s novels, nine bilingual plays, history, philosophy, language and translation works.
-- Direct archive records for 447 Videha issues and 37 Sadeha issues, with issue 5’s two preserved versions.
+- Direct GitHub repository links for all 485 preserved Videha/Sadeha PDF files: 447 Videha issues and 38 Sadeha files covering issues 1–37, including issue 5’s second version.
+- A generated catalogue of book, study and learning editions already published in the `videha-ejournal.github.io`, `videha-quiz` and `videha` repositories.
 - Listen controls using browser speech, a 41-language Google Translate gateway, and reading accessibility controls.
 - Source-led festival stages without invented event dates or speakers.
 
@@ -15,6 +16,7 @@ A responsive, accessible GitHub Pages festival and publication portal for the Vi
 - `public/` — the website, data and image assets.
 - `scripts/sources/` — retained Videha archive sources used by the build.
 - `scripts/build.mjs` — generates the deployable `dist/` package. Keep this file inside `scripts/`.
+- `scripts/update-github-catalogue.mjs` — refreshes the cross-repository book catalogue from GitHub.
 - `.github/workflows/deploy-pages.yml` — GitHub Pages deployment workflow.
 
 ## Local preview

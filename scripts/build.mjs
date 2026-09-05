@@ -11,6 +11,16 @@ await rm(out, { recursive: true, force: true });
 await mkdir(path.join(source, "data"), { recursive: true });
 
 const manifest = JSON.parse(await readFile(archiveSource, "utf8"));
+const githubFile = (record) => {
+  const pad = String(record.issue).padStart(3, "0");
+  if (record.publication === "VIDEHA") return `Videha ${pad}.pdf`;
+  if (record.issue === 5 && record.version === 2) return "Sadeha 05 v2.pdf";
+  return `Sadeha ${pad.slice(-2)}.pdf`;
+};
+const githubArchive = manifest.archive.map((record) => {
+  const file = githubFile(record);
+  return { ...record, source: `https://github.com/videha-ejournal/videha-sadeha/blob/main/${encodeURIComponent(file).replace(/%2F/g, "/")}` };
+});
 await writeFile(
   path.join(source, "data", "archive.json"),
   JSON.stringify({
@@ -18,7 +28,7 @@ await writeFile(
     currentIssue: manifest.currentIssue,
     archiveMaxVideha: manifest.archiveMaxVideha,
     archiveSadehaDocuments: manifest.archiveSadehaDocuments,
-    archive: manifest.archive,
+    archive: githubArchive,
     hosts: manifest.hosts,
   }),
 );
@@ -42,4 +52,4 @@ await writeFile(path.join(source, "data", "pothi.json"), JSON.stringify(uniquePo
 
 await cp(source, out, { recursive: true });
 await writeFile(path.join(out, ".nojekyll"), "");
-console.log(`Built ${manifest.archive.length} archive records and ${uniquePothi.length} Pothi records in ${out}`);
+console.log(`Built ${githubArchive.length} GitHub archive records and ${uniquePothi.length} Pothi records in ${out}`);

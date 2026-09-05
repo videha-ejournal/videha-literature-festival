@@ -105,6 +105,11 @@ async function init(){
     const seen=new Set(books.map(b=>`${b.title}|${b.category}`));
     pothi.forEach(x=>{const category=/गजेन्द्र ठाकुर|Gajendra Thakur/i.test(x.author)?"Gajendra Thakur archive":"Videha Pothi";const key=`${x.title}|${category}`;if(!seen.has(key)){books.push({title:x.title,category,detail:x.author||"Videha Pothi archive record",url:x.url||"https://www.videha.co.in/pothi.htm"});seen.add(key)}});
   }catch{}
+  try{
+    const githubBooks=await fetch("data/github-library.json").then(r=>r.json());
+    const seenUrls=new Set(books.map(b=>b.url));
+    githubBooks.forEach(x=>{if(!seenUrls.has(x.url)){books.push(x);seenUrls.add(x.url)}});
+  }catch{}
   [...new Set(books.map(b=>b.category))].sort().forEach(c=>$("#bookCategory").insertAdjacentHTML("beforeend",`<option>${c}</option>`));
   renderBooks();
   try{
