@@ -3,24 +3,35 @@ const $$ = (q, root = document) => [...root.querySelectorAll(q)];
 const archiveUrl = "https://www.videha.co.in/";
 
 const parallelTomes = [
-  { title: "A Parallel History of Mithila & Maithili Literature — Tome I", range: "Volumes 1–25", url: "https://videha-ejournal.github.io/VIDEHA_PARALLEL_HISTORY_TOME_I.html" },
-  { title: "A Parallel History of Mithila & Maithili Literature — Tome II", range: "Volumes 26–50", url: "https://videha-ejournal.github.io/VIDEHA_PARALLEL_HISTORY_TOME_II.html" },
-  { title: "A Parallel History of Mithila & Maithili Literature — Tome III", range: "Volumes 51–75", url: "https://videha-ejournal.github.io/VIDEHA_PARALLEL_HISTORY_TOME_III.html" },
-  { title: "A Parallel History of Mithila & Maithili Literature — Tome IV", range: "Volumes 76–100", url: "https://videha-ejournal.github.io/VIDEHA_PARALLEL_HISTORY_TOME_IV.html" },
+  { title: "A Parallel History of Mithila & Maithili Literature — Tome I", range: "Volumes 1–25", pothi: "https://store.pothi.com/book/gajendra-thakur-parallel-history-mithila-maithili-literature/", read: "https://videha-ejournal.github.io/VIDEHA_PARALLEL_HISTORY_TOME_I.html" },
+  { title: "A Parallel History of Mithila & Maithili Literature — Tome II", range: "Volumes 26–50", pothi: "https://store.pothi.com/book/gajendra-thakur-parallel-history-mithila-maithili-tome-2/", read: "https://videha-ejournal.github.io/VIDEHA_PARALLEL_HISTORY_TOME_II.html" },
+  { title: "A Parallel History of Mithila & Maithili Literature — Tome III", range: "Volumes 51–75", pothi: "https://store.pothi.com/book/gajendra-thakur-parallel-history-mithila-maithili-literature-volume-1-100-tome-3-volume-51-75-b/", read: "https://videha-ejournal.github.io/VIDEHA_PARALLEL_HISTORY_TOME_III.html" },
+  { title: "A Parallel History of Mithila & Maithili Literature — Tome IV", range: "Volumes 76–100", pothi: "https://store.pothi.com/book/gajendra-thakur-parallel-history-mithila-maithili-literature-volume-1-100-tome-4-volume-76-100-/", read: "https://videha-ejournal.github.io/VIDEHA_PARALLEL_HISTORY_TOME_IV.html" },
 ];
-const panjiLinks = [
-  "https://store.pothi.com/book/gajendra-thakur-decoding-panji-mithila/",
-  "https://store.pothi.com/book/gajendra-thakur-decoding-panji-mithila-volume-ii/",
-  "https://store.pothi.com/book/gajendra-thakur-decoding-panji-mithila-volume-iii/",
-  "https://store.pothi.com/book/gajendra-thakur-decoding-panji-mithila-volume-iv/",
-  "https://store.pothi.com/book/gajendra-thakur-decoding-panji-mithila-volume-v/",
-  "https://www.videha.co.in/gajendra-thakur-samagra.htm",
+const parallelCommon = [
+  { label: "Google Playbook", url: "https://play.google.com/store/books/details?id=uvjREQAAQBAJ" },
+  { label: "Google Play audiobook", url: "https://play.google.com/store/audiobooks/details?id=AQAAAEBas1rzEM" },
+  { label: "Kindle", url: "https://www.amazon.in/dp/B0GX2XRKM7" },
+];
+const panjiEditions = [
+  { roman:"I", pothi:"https://store.pothi.com/book/gajendra-thakur-decoding-panji-mithila/", kindle:"https://www.amazon.in/dp/B0H463RVT8", play:"https://play.google.com/store/books/details?id=rrniEQAAQBAJ", audio:"https://play.google.com/store/audiobooks/details?id=AQAAAEB64VahPM" },
+  { roman:"II", pothi:"https://store.pothi.com/book/gajendra-thakur-decoding-panji-mithila-volume-ii/", kindle:"https://www.amazon.in/dp/B0H6NPRTYB", play:"https://play.google.com/store/books/details?id=5RrxEQAAQBAJ", audio:"https://play.google.com/store/audiobooks/details?id=AQAAAEB6wVeBPM" },
+  { roman:"III", pothi:"https://store.pothi.com/book/gajendra-thakur-decoding-panji-mithila-volume-iii/", kindle:"https://www.amazon.in/dp/B0H6R4BBFB", play:"https://play.google.com/store/books/details?id=-XD2EQAAQBAJ", audio:"https://play.google.com/store/audiobooks/details?id=AQAAAED6hDjE0M" },
+  { roman:"IV", pothi:"https://store.pothi.com/book/gajendra-thakur-decoding-panji-mithila-volume-iv/", kindle:"https://www.amazon.in/dp/B0H6R6VSBF", play:"https://play.google.com/store/books/details?id=bfn2EQAAQBAJ", audio:"https://play.google.com/store/audiobooks/details?id=AQAAAED6jFbMvM" },
+  { roman:"V", pothi:"https://store.pothi.com/book/gajendra-thakur-decoding-panji-mithila-volume-v/", kindle:"https://www.amazon.in/dp/B0H6R4BBFD", play:"https://play.google.com/store/books/details?id=hGH4EQAAQBAJ", audio:"https://play.google.com/store/audiobooks/details?id=AQAAAED6Ui4SxM" },
+  { roman:"VI", pothi:"https://store.pothi.com/book/gajendra-thakur-decoding-panji-mithila-0/", kindle:"https://www.amazon.in/dp/B0H6R2YCFP", play:"https://play.google.com/store/books/details?id=pcH6EQAAQBAJ", audio:"https://play.google.com/store/audiobooks/details?id=AQAAAED61jGW2M" },
 ];
 const childTitles = ["Tarhari Me Pari Lok","Bal Guru","Deena Bhadari","Amar Baba","Moti Dai","Raja Salhes","Bagiyak Gach","Bahura Godhin Natua Dayal","Chauharmal aa Reshma","Mahua Ghatwarin","Chechan","Gariban Baba","Varnamala Shiksha Ankita","Gangodevik Bhagta","Miran Sahab","Jat-Jatin","Lalmain Baba","Munga–Jalim Singh","Bad Sukh Saar Paol Tua Teere","Battu","Bhat–Bhatin","Bihula","Brahman aa Thakurak Katha","Daku Rauhineya","Doki–Doka","Gonu Jha and Das Thop Baba","Jyoti Panjiyar","Kauwa aa Fuddi","Madhav Singh: Amta Gaam","Motisaeri","Murkhadhiraj","Naika Banijara","Raghuni Marar","Raja Ansari","Raja Dholan","Ugna","Ootani"];
 const playTitles = ["Apala Atreyi","Bhaa Jaeb Chhu","Danveer Dadhichi","Ganga Bridge","Jalodeep","Kamalak Bhagata","Machanda","Sankarshan","Ulkamukh"];
 
-const books = parallelTomes.map((tome) => ({ title: tome.title, category: "Parallel History", detail: `${tome.range} · cumulative literary history`, url: tome.url }));
-for (let i = 1; i <= 6; i++) books.push({ title: `Decoding the Panji of Mithila — Volume ${["I","II","III","IV","V","VI"][i-1]}`, category: "Panji", detail: "Genealogy, manuscript practice and social history", url: panjiLinks[i-1] });
+const books = parallelTomes.map((tome) => ({
+  title: tome.title, category: "Parallel History", detail: `${tome.range} · Series ISBN 978-93-5812-486-6`, url: tome.pothi,
+  links: [{label:"Pothi hardback",url:tome.pothi},{label:"Read online",url:tome.read},...parallelCommon],
+}));
+panjiEditions.forEach((edition) => books.push({
+  title: `Decoding the Panji of Mithila — Volume ${edition.roman}`, category: "Panji", detail: "Genealogy, manuscript practice and social history", url: edition.pothi,
+  links: [{label:"Pothi hardback",url:edition.pothi},{label:"Kindle",url:edition.kindle},{label:"Google Playbook",url:edition.play},{label:"Audiobook",url:edition.audio}],
+}));
 childTitles.forEach((title, i) => books.push({ title, category: "Children’s literature", detail: `Illustrated Maithili children’s novel ${i + 1} of 37`, url: "https://archive.org/download/videha-petar-2/37_MAITHILI%20NOVELS.pdf" }));
 playTitles.forEach(title => books.push({ title, category: "Theatre", detail: "Maithili and English illustrated stage-play editions", url: "https://www.videha.co.in/Audio_Video.htm" }));
 [
@@ -61,7 +72,7 @@ function renderBooks(reset=false){
   const q=$("#bookSearch").value.trim().toLowerCase(), cat=$("#bookCategory").value;
   const matches=books.filter(b=>(cat==="all"||b.category===cat)&&(!q||`${b.title} ${b.category} ${b.detail}`.toLowerCase().includes(q)));
   $("#bookCount").textContent=`Showing ${Math.min(bookLimit,matches.length)} of ${matches.length} indexed books and volumes`;
-  $("#bookGrid").innerHTML=matches.slice(0,bookLimit).map(b=>`<article class="book-card"><span class="tag">${b.category}</span><h3>${b.title}</h3><p>${b.detail}</p><a href="${b.url}" target="_blank" rel="noopener">Open publication record ↗</a></article>`).join("") || "<p>No books match those filters.</p>";
+  $("#bookGrid").innerHTML=matches.slice(0,bookLimit).map(b=>`<article class="book-card"><span class="tag">${b.category}</span><h3>${b.title}</h3><p>${b.detail}</p>${b.links?`<div class="book-links">${b.links.map(link=>`<a href="${link.url}" target="_blank" rel="noopener">${link.label} ↗</a>`).join("")}</div>`:`<a href="${b.url}" target="_blank" rel="noopener">Open publication record ↗</a>`}</article>`).join("") || "<p>No books match those filters.</p>";
   $("#moreBooks").hidden=bookLimit>=matches.length;
 }
 function renderIssues(reset=false){
