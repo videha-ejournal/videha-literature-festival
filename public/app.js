@@ -2,11 +2,11 @@ const $ = (q, root = document) => root.querySelector(q);
 const $$ = (q, root = document) => [...root.querySelectorAll(q)];
 const archiveUrl = "https://www.videha.co.in/";
 
-const parallelLinks = [
-  "https://store.pothi.com/book/gajendra-thakur-parallel-history-mithila-maithili-literature/",
-  "https://store.pothi.com/book/gajendra-thakur-parallel-history-mithila-maithili-tome-2/",
-  "https://store.pothi.com/book/gajendra-thakur-parallel-history-mithila-maithili-literature-volume-1-100-tome-3-volume-51-75-b/",
-  "https://store.pothi.com/book/gajendra-thakur-parallel-history-mithila-maithili-literature-volume-1-100-tome-4-volume-76-100-/",
+const parallelTomes = [
+  { title: "A Parallel History of Mithila & Maithili Literature — Tome I", range: "Volumes 1–25", url: "https://videha-ejournal.github.io/VIDEHA_PARALLEL_HISTORY_TOME_I.html" },
+  { title: "A Parallel History of Mithila & Maithili Literature — Tome II", range: "Volumes 26–50", url: "https://videha-ejournal.github.io/VIDEHA_PARALLEL_HISTORY_TOME_II.html" },
+  { title: "A Parallel History of Mithila & Maithili Literature — Tome III", range: "Volumes 51–75", url: "https://videha-ejournal.github.io/VIDEHA_PARALLEL_HISTORY_TOME_III.html" },
+  { title: "A Parallel History of Mithila & Maithili Literature — Tome IV", range: "Volumes 76–100", url: "https://videha-ejournal.github.io/VIDEHA_PARALLEL_HISTORY_TOME_IV.html" },
 ];
 const panjiLinks = [
   "https://store.pothi.com/book/gajendra-thakur-decoding-panji-mithila/",
@@ -19,11 +19,7 @@ const panjiLinks = [
 const childTitles = ["Tarhari Me Pari Lok","Bal Guru","Deena Bhadari","Amar Baba","Moti Dai","Raja Salhes","Bagiyak Gach","Bahura Godhin Natua Dayal","Chauharmal aa Reshma","Mahua Ghatwarin","Chechan","Gariban Baba","Varnamala Shiksha Ankita","Gangodevik Bhagta","Miran Sahab","Jat-Jatin","Lalmain Baba","Munga–Jalim Singh","Bad Sukh Saar Paol Tua Teere","Battu","Bhat–Bhatin","Bihula","Brahman aa Thakurak Katha","Daku Rauhineya","Doki–Doka","Gonu Jha and Das Thop Baba","Jyoti Panjiyar","Kauwa aa Fuddi","Madhav Singh: Amta Gaam","Motisaeri","Murkhadhiraj","Naika Banijara","Raghuni Marar","Raja Ansari","Raja Dholan","Ugna","Ootani"];
 const playTitles = ["Apala Atreyi","Bhaa Jaeb Chhu","Danveer Dadhichi","Ganga Bridge","Jalodeep","Kamalak Bhagata","Machanda","Sankarshan","Ulkamukh"];
 
-const books = [];
-for (let i = 1; i <= 100; i++) {
-  const tome = Math.ceil(i / 25);
-  books.push({ title: `A Parallel History of Mithila & Maithili Literature — Volume ${i}`, category: "Parallel History", detail: `Tome ${tome} · cumulative literary history`, url: parallelLinks[tome - 1] });
-}
+const books = parallelTomes.map((tome) => ({ title: tome.title, category: "Parallel History", detail: `${tome.range} · cumulative literary history`, url: tome.url }));
 for (let i = 1; i <= 6; i++) books.push({ title: `Decoding the Panji of Mithila — Volume ${["I","II","III","IV","V","VI"][i-1]}`, category: "Panji", detail: "Genealogy, manuscript practice and social history", url: panjiLinks[i-1] });
 childTitles.forEach((title, i) => books.push({ title, category: "Children’s literature", detail: `Illustrated Maithili children’s novel ${i + 1} of 37`, url: "https://archive.org/download/videha-petar-2/37_MAITHILI%20NOVELS.pdf" }));
 playTitles.forEach(title => books.push({ title, category: "Theatre", detail: "Maithili and English illustrated stage-play editions", url: "https://www.videha.co.in/Audio_Video.htm" }));

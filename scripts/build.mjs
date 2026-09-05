@@ -19,7 +19,7 @@ const githubFile = (record) => {
 };
 const githubArchive = manifest.archive.map((record) => {
   const file = githubFile(record);
-  return { ...record, source: `https://github.com/videha-ejournal/videha-sadeha/blob/main/${encodeURIComponent(file).replace(/%2F/g, "/")}` };
+  return { ...record, source: `https://videha-ejournal.github.io/videha-sadeha/${encodeURIComponent(file).replace(/%2F/g, "/")}` };
 });
 await writeFile(
   path.join(source, "data", "archive.json"),

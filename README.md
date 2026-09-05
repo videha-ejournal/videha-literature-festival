@@ -5,7 +5,7 @@ A responsive, accessible GitHub Pages festival and publication portal for the Vi
 ## What is included
 
 - One-search access to books, series, Videha issues and Sadeha issues.
-- An expanded Gajendra Thakur shelf: 100 Parallel History volumes, six Panji volumes, 37 illustrated children’s novels, nine bilingual plays, history, philosophy, language and translation works.
+- An expanded Gajendra Thakur shelf: four Parallel History tomes containing volumes 1–100 (Tome I: 1–25; Tome II: 26–50; Tome III: 51–75; Tome IV: 76–100), six Panji volumes, 37 illustrated children’s novels, nine bilingual plays, history, philosophy, language and translation works.
 - Direct GitHub repository links for all 485 preserved Videha/Sadeha PDF files: 447 Videha issues and 38 Sadeha files covering issues 1–37, including issue 5’s second version.
 - A generated catalogue of book, study and learning editions already published in the `videha-ejournal.github.io`, `videha-quiz` and `videha` repositories.
 - Listen controls using browser speech, a 41-language Google Translate gateway, and reading accessibility controls.
