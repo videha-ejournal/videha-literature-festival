@@ -4,26 +4,81 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Videha Literature Festival — books, journals, performance, scholarship and living Maithili culture from the Videha ecosystem.">
+  <link rel="canonical" href="https://videha-ejournal.github.io/videha-literature-festival/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://videha-ejournal.github.io/videha-literature-festival/">
+  <meta property="og:title" content="Videha Literature Festival">
+  <meta property="og:description" content="Explore 1,171 Videha Pothi records, 368 published GitHub editions, 485 Videha–Sadeha files, performance, translation and scholarship.">
+  <meta property="og:image" content="https://videha-ejournal.github.io/videha-literature-festival/assets/VIDEHA%20LITERATURE%20FESTIVAL.png">
+  <meta property="og:image:alt" content="Videha Literature Festival artwork">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Videha Literature Festival">
+  <meta name="twitter:description" content="A searchable meeting place for Videha books, issues, scholarship and performance.">
+  <meta name="twitter:image" content="https://videha-ejournal.github.io/videha-literature-festival/assets/VIDEHA%20LITERATURE%20FESTIVAL.png">
   <title>Videha Literature Festival</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://videha-ejournal.github.io/videha-literature-festival/#website",
+        "name": "Videha Literature Festival",
+        "url": "https://videha-ejournal.github.io/videha-literature-festival/",
+        "inLanguage": ["en", "mai"],
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://videha-ejournal.github.io/videha-literature-festival/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "CollectionPage",
+        "name": "Videha and Sadeha periodical archive",
+        "url": "https://videha-ejournal.github.io/videha-literature-festival/#issues",
+        "mainEntity": {"@type": "ItemList", "numberOfItems": 485}
+      },
+      {
+        "@type": "CreativeWorkSeries",
+        "name": "A Parallel History of Mithila & Maithili Literature",
+        "author": {"@type": "Person", "name": "Gajendra Thakur"},
+        "numberOfItems": 100
+      },
+      {
+        "@type": "CreativeWorkSeries",
+        "name": "Decoding the Panji of Mithila",
+        "author": {"@type": "Person", "name": "Gajendra Thakur"},
+        "numberOfItems": 6
+      },
+      {
+        "@type": "Periodical",
+        "name": "Videha Maithili eJournal",
+        "issn": "2229-547X",
+        "url": "https://www.videha.co.in/",
+        "inLanguage": "mai"
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to festival</a>
   <header class="site-header">
     <a class="brand" href="#top" aria-label="Videha Literature Festival home">
-      <span class="brand-mark">वि</span><span>VIDEHA <i>Literature Festival</i></span>
+      <img class="brand-logo" src="assets/vlf-logo.png" alt=""><span><b>V.L.F.</b><i>Videha Literature Festival</i></span>
     </a>
     <button class="menu-toggle" aria-expanded="false" aria-controls="primary-nav">Menu</button>
     <nav id="primary-nav" aria-label="Primary navigation">
-      <a href="#books">Books</a><a href="#issues">Issues</a><a href="#wings">Festival wings</a><a href="#reader">Reading room</a><a href="#about">About</a>
+      <a href="#books">Books</a><a href="#issues">Issues</a><a href="#stages">Stages</a><a href="#wings">Wings</a><a href="#media">Media</a><a href="#reader">Reading room</a>
     </nav>
     <div class="utility">
-      <button id="listenBtn" type="button">सुनू · Listen</button>
+      <button id="listenBtn" type="button"><span lang="mai-Deva">सुनू</span> · Listen</button>
       <button id="translateBtn" type="button">Translate with AI</button>
-      <button id="accessBtn" type="button">सहायक तकनीक</button>
+      <button id="accessBtn" type="button"><span lang="mai-Deva">सहायक तकनीक</span></button>
     </div>
   </header>
 
@@ -44,19 +99,19 @@
         <p class="dek">Enter through books, periodicals, performance and ideas. Explore Gajendra Thakur’s cumulative works alongside the complete Videha and Sadeha issue archive—without losing the sources behind them.</p>
         <div class="hero-actions"><a class="button primary" href="#books">Enter the book pavilion</a><a class="button ghost" href="#issues">Browse every issue</a></div>
         <form class="global-search" role="search" id="globalSearchForm">
-          <label for="globalSearch">Search the whole festival</label>
-          <div><input id="globalSearch" type="search" placeholder="Try Panji, Vidyapati, philosophy, issue 307…" autocomplete="off"><button>Search</button></div>
-          <p id="searchStatus" aria-live="polite">Search books, series, Videha and Sadeha together.</p>
+          <label for="globalSearch">Search books, authors, issues, dates and Rangmanch</label>
+          <div><input id="globalSearch" type="search" placeholder="Try Panji, Vidyapati, issue 307, Kanyadaan…" autocomplete="off"><button>Search everything</button></div>
+          <p id="searchStatus" aria-live="polite">One search across books, series, Videha, Sadeha and theatre records.</p>
         </form>
       </div>
       <figure class="hero-art"><img src="assets/VIDEHA%20LITERATURE%20FESTIVAL.png" alt="Videha Literature Festival artwork" fetchpriority="high"><figcaption>Language · literature · history · philosophy · performance</figcaption></figure>
     </section>
 
     <section class="stats" aria-label="Archive at a glance">
-      <article><strong id="videhaCount">447</strong><span>archived Videha issues</span></article>
-      <article><strong>37</strong><span>Sadeha issues</span></article>
-      <article><strong>4</strong><span>Parallel History tomes · 100 volumes</span></article>
-      <article><strong>6</strong><span>Panji volumes</span></article>
+      <a href="#issues" aria-label="Browse 447 archived Videha issues"><strong id="videhaCount">447</strong><span>archived Videha issues</span><em>Browse issues ↓</em></a>
+      <a href="#issues" data-issue-publication="SADEHA" aria-label="Browse 37 Sadeha issues"><strong>37</strong><span>Sadeha issues</span><em>Browse Sadeha ↓</em></a>
+      <a href="#books" data-book-query="Parallel History" aria-label="Find the four Parallel History tomes"><strong>4</strong><span>Parallel History tomes · 100 volumes</span><em>Open series ↓</em></a>
+      <a href="#books" data-book-query="Decoding the Panji" aria-label="Find the six Panji volumes"><strong>6</strong><span>Panji volumes</span><em>Open series ↓</em></a>
     </section>
 
     <section class="four-doors" aria-labelledby="doorsTitle">
@@ -70,19 +125,19 @@
     </section>
 
     <section id="wings" class="festival-wings" aria-labelledby="wingsTitle">
-      <div class="section-heading"><p class="eyebrow">VIDEHA FESTIVAL WINGS</p><h2 id="wingsTitle">Four living programmes</h2><p>Each doorway opens the corresponding programme in the established Videha website.</p></div>
+      <div class="section-heading"><p class="eyebrow">INSTITUTIONAL PORTALS</p><h2 id="wingsTitle">Four living Videha programmes</h2><p>Wings are continuing Videha programme portals. The Festival Stages below are the finer subject index that connects books, issues, performances and these wings.</p></div>
       <div class="wing-grid">
         <a class="wing-card wing-kids" href="https://www.videha.co.in/kids.htm" target="_blank" rel="noopener">
-          <span class="wing-number">01</span><span class="wing-script">शिशु उत्सव</span><h3>Kids · Shishu Utsav</h3><p>Children’s and young readers’ literature from the Videha ecosystem.</p><strong>Enter the programme ↗</strong>
+          <span class="wing-number">01</span><span class="wing-script" lang="mai-Deva">शिशु उत्सव</span><h3>Kids · Shishu Utsav</h3><p>Illustrated novels, stories, quizzes and learning resources for children and young readers.</p><small>Preview · 37 illustrated novels and wider children’s shelves</small><strong>Open established Videha programme ↗</strong>
         </a>
         <a class="wing-card wing-stri" href="https://www.videha.co.in/femcorner.htm" target="_blank" rel="noopener">
-          <span class="wing-number">02</span><span class="wing-script">स्त्री-कोणा</span><h3>Strī-Koṇa</h3><p>A dedicated doorway to women’s writing and the Videha women’s corner.</p><strong>Enter the programme ↗</strong>
+          <span class="wing-number">02</span><span class="wing-script" lang="mai-Deva">स्त्री-कोणा</span><h3>Strī-Koṇa</h3><p>Poetry, prose, criticism and archived voices from the Videha women’s corner.</p><small>Preview · women’s writing within the continuing periodical archive</small><strong>Open established Videha programme ↗</strong>
         </a>
         <a class="wing-card wing-learn" href="https://www.videha.co.in/videha-elearning.htm" target="_blank" rel="noopener">
-          <span class="wing-number">03</span><span class="wing-script">विदेह ई-लर्निङ्ग</span><h3>Videha E-learning</h3><p>Learning resources and structured study paths within Videha.</p><strong>Enter the programme ↗</strong>
+          <span class="wing-number">03</span><span class="wing-script" lang="mai-Deva">विदेह ई-लर्निङ्ग</span><h3>Videha E-learning</h3><p>Quizzes, dictionaries, language aids and structured study paths within Videha.</p><small>Preview · self-learning and classroom pathways</small><strong>Open established Videha programme ↗</strong>
         </a>
         <a class="wing-card wing-av" href="https://www.videha.co.in/Audio_Video.htm" target="_blank" rel="noopener">
-          <span class="wing-number">04</span><span class="wing-script">दृश्य-श्रव्य नाट्य उत्सव</span><h3>Dṛśya–Śravya Nāṭya Utsav</h3><p>Audio, video, theatre, narration and accessible performance collections.</p><strong>Enter the programme ↗</strong>
+          <span class="wing-number">04</span><span class="wing-script" lang="mai-Deva">दृश्य-श्रव्य नाट्य उत्सव</span><h3>Dṛśya–Śravya Nāṭya Utsav</h3><p>Audio, video, theatre, narration and accessible performance collections.</p><small>Preview · recorded performance and audio-visual archives</small><strong>Open established Videha programme ↗</strong>
         </a>
       </div>
     </section>
@@ -90,6 +145,19 @@
     <section id="books" class="books-section">
       <div class="section-heading split"><div><p class="eyebrow">BOOK PAVILION</p><h2>Gajendra Thakur’s cumulative shelf</h2><p>Series are expanded into individually discoverable volumes, then joined with the books and study editions already published across the Videha GitHub repositories.</p></div><a class="text-link" href="https://www.videha.co.in/gajendra-thakur-samagra.htm">Open Gajendra Thakur Samagra ↗</a></div>
       <div class="cover-rail" id="coverRail" aria-label="Selected book covers"></div>
+      <div class="catalogue-title"><p class="eyebrow">VIDEHA POTHI &amp; GITHUB CATALOGUE</p><h3>Browse the verified shelf three ways</h3><p>Use the current listing, arrange titles bookwise, or gather records authorwise. Search and source filters work in every view.</p></div>
+      <div class="catalogue-ledger" aria-label="Publication catalogue sources">
+        <button class="source-chip active" type="button" data-book-source="all"><strong id="allBookCount">Loading…</strong><span>All verified records</span></button>
+        <button class="source-chip" type="button" data-book-source="curated"><strong id="curatedCount">—</strong><span>Festival selection</span></button>
+        <button class="source-chip" type="button" data-book-source="pothi"><strong id="pothiCount">1,171</strong><span>Videha Pothi</span></button>
+        <button class="source-chip" type="button" data-book-source="github"><strong id="githubCount">368</strong><span>GitHub editions</span></button>
+      </div>
+      <div class="view-switcher" role="group" aria-label="Catalogue arrangement">
+        <button class="view-chip active" type="button" data-book-view="shelf" aria-pressed="true">Shelf listing</button>
+        <button class="view-chip" type="button" data-book-view="bookwise" aria-pressed="false">Bookwise · A–Z</button>
+        <button class="view-chip" type="button" data-book-view="authorwise" aria-pressed="false">Authorwise</button>
+      </div>
+      <p class="catalogue-note">Every verified source record is included below. Choose a source, search, or keep selecting “Show more books” to reach the complete catalogue.</p>
       <div class="filterbar" aria-label="Book filters">
         <input id="bookSearch" type="search" placeholder="Search titles and series">
         <select id="bookCategory"><option value="all">All shelves</option></select>
@@ -97,40 +165,95 @@
       </div>
       <p class="result-count" id="bookCount" aria-live="polite"></p>
       <div class="catalogue" id="bookGrid"></div>
-      <button class="load-more" id="moreBooks">Show more books</button>
+      <noscript><div class="noscript-card"><h3>The complete catalogue is also available without JavaScript.</h3><p>Open the static, searchable-by-browser index containing every verified Videha Pothi and GitHub publication link.</p><a href="catalogue.html">Open the complete static catalogue →</a></div></noscript>
+      <p class="static-catalogue-link"><a href="catalogue.html">Open the complete static catalogue · 1,171 Pothi + 368 GitHub records →</a></p>
+      <button class="load-more" id="moreBooks" hidden>Show more books</button>
       <div class="archive-link-card"><img src="assets/VIDEHA%20ARCHIVE%20POTHI.jpg" alt="Videha Archive Pothi cover" loading="lazy"><div><p class="eyebrow">THE WIDER SHELF</p><h3>Videha Pothi</h3><p>The festival also opens onto the larger multi-author Videha book archive: poetry, fiction, criticism, reference works, children’s literature and translations.</p><a class="button ghost" href="https://www.videha.co.in/pothi.htm">Browse the complete Pothi catalogue ↗</a></div></div>
     </section>
 
     <section id="issues" class="issues-section">
       <div class="section-heading split"><div><p class="eyebrow">PERIODICAL ARCHIVE</p><h2>Every issue, one searchable desk</h2><p>The issue records and dates come from the Videha archive manifest. All 485 preserved files open from the dedicated Videha–Sadeha GitHub repository.</p></div><a class="text-link" href="https://github.com/videha-ejournal/videha-sadeha">Open the source repository ↗</a></div>
       <div class="issue-visual"><img src="assets/videha%20old%20issues.png" alt="Collage of historic Videha issue covers" loading="lazy"><div><strong>2008 → present</strong><span>A living, twice-monthly Maithili record</span></div></div>
+      <p class="filter-explainer">The whole-festival search above already queries issue numbers, titles, dates and years. These controls narrow only the periodical desk shown below.</p>
       <div class="filterbar">
-        <input id="issueSearch" type="search" inputmode="numeric" placeholder="Issue number, year or title">
+        <label class="sr-only" for="issueSearch">Filter the visible periodical desk</label><input id="issueSearch" type="search" inputmode="numeric" placeholder="Filter this issue desk">
         <select id="publication"><option value="VIDEHA">Videha</option><option value="SADEHA">Sadeha</option><option value="all">Both publications</option></select>
         <select id="issueYear"><option value="all">All years</option></select>
       </div>
       <p class="result-count" id="issueCount" aria-live="polite"></p>
       <div class="issue-grid" id="issueGrid"></div>
-      <button class="load-more" id="moreIssues">Show more issues</button>
+      <noscript><div class="noscript-card"><h3>Issue browsing without JavaScript</h3><p>The complete repository remains directly available.</p><a href="https://github.com/videha-ejournal/videha-sadeha">Open all Videha–Sadeha files →</a></div></noscript>
+      <button class="load-more" id="moreIssues" hidden>Show more issues</button>
     </section>
 
     <section id="stages" class="stages-section">
-      <div class="section-heading"><p class="eyebrow">FESTIVAL STAGES</p><h2>Not a fictional schedule—a set of source-led programmes</h2><p>No invented dates or speakers. These stages organize real Videha collections for reading, teaching and future live programming.</p></div>
-      <div class="stage-grid" id="stageGrid"></div>
+      <div class="section-heading"><p class="eyebrow">SUBJECT INDEX WITHIN THE FOUR WINGS</p><h2>Six source-led Festival Stages</h2><p>Stages are not a second set of institutions or a fictional schedule. They are the finer index connecting verified Videha books, issues, media and programme wings by subject.</p></div>
+      <div class="stage-grid" id="stageGrid" aria-live="polite">
+        <article class="stage-card"><p class="eyebrow">POETRY</p><h3>Kavita Sabha</h3><p>Poetry across the current journal, historic issues, collected verse and recorded Videha programmes.</p><div class="stage-links"><a href="https://www.videha.co.in/verse.htm" target="_blank" rel="noopener">Read poetry ↗</a><a href="https://www.youtube.com/@videha_ejournal/playlists" target="_blank" rel="noopener">Videha video ↗</a></div></article>
+        <article class="stage-card"><p class="eyebrow">THEATRE</p><h3>Rangmanch</h3><p>Named performance videos, drama playlists, theatre organisations, scripts and criticism.</p><div class="stage-links"><a href="#rangmanchArchive">Open Rangmanch player ↓</a><a href="https://www.videha.co.in/Audio_Video.htm" target="_blank" rel="noopener">Source index ↗</a></div></article>
+        <article class="stage-card"><p class="eyebrow">YOUNG READERS</p><h3>Shishu Utsav</h3><p>Thirty-seven illustrated novels, stories, quizzes and learning material for younger readers.</p><div class="stage-links"><a href="https://www.videha.co.in/kids.htm" target="_blank" rel="noopener">Children’s programme ↗</a><button type="button" data-book-query="Children">Find children’s books ↓</button></div></article>
+        <article class="stage-card"><p class="eyebrow">TRANSLATION</p><h3>Anuvad Manch</h3><p>Sanskrit philosophical texts, multilingual literary translation and movement between Maithili and English.</p><div class="stage-links"><button type="button" data-book-query="translation">Find translations ↓</button><a href="https://www.youtube.com/@videha-elearning/playlists" target="_blank" rel="noopener">E-learning video ↗</a></div></article>
+        <article class="stage-card"><p class="eyebrow">CRITICISM</p><h3>Samiksha Kaksh</h3><p>Author criticism, literary historiography, forgotten writers and arguments about the Maithili canon.</p><div class="stage-links"><a href="#criticismArchive">Play 12-part archive ↓</a><button type="button" data-book-query="Criticism">Find criticism ↓</button></div></article>
+        <article class="stage-card"><p class="eyebrow">PUBLIC MEMORY</p><h3>Archive Assembly</h3><p>Issue-by-issue discovery across 447 archived Videha issues and 37 Sadeha compilations.</p><div class="stage-links"><a href="#issues">Search periodicals ↑</a><a href="https://www.youtube.com/user/ggajendra71/playlists" target="_blank" rel="noopener">Gajendra Thakur video ↗</a></div></article>
+      </div>
+      <div class="rangmanch-archive" id="rangmanchArchive">
+        <div class="rangmanch-heading"><div><p class="eyebrow">RANGMANCH · PERFORMANCE ARCHIVE</p><h3>Watch, read and follow Maithili theatre</h3><p>Named records are carried from Videha’s Audio/Video index. Playlists and individual performances play here; scripts, criticism and theatre organisations open at their supplied sources.</p></div><a href="https://www.videha.co.in/Audio_Video.htm" target="_blank" rel="noopener">View the complete source index ↗</a></div>
+        <div class="rangmanch-player-wrap"><p id="rangmanchPlayerTitle" aria-live="polite">Now selected: Videha Documentary / Drama playlist</p><iframe id="rangmanchPlayer" src="https://www.youtube-nocookie.com/embed/videoseries?list=PLXne1kENT3DE" title="Rangmanch player: Videha Documentary and Drama playlist" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+        <div class="rangmanch-controls" role="group" aria-label="Filter Rangmanch records">
+          <button class="active" type="button" data-rangmanch-filter="all" aria-pressed="true">All · 27</button>
+          <button type="button" data-rangmanch-filter="Playlists" aria-pressed="false">Playlists · 3</button>
+          <button type="button" data-rangmanch-filter="Performances" aria-pressed="false">Performances · 8</button>
+          <button type="button" data-rangmanch-filter="Theatre network" aria-pressed="false">Theatre network · 6</button>
+          <button type="button" data-rangmanch-filter="Texts &amp; criticism" aria-pressed="false">Texts &amp; criticism · 10</button>
+        </div>
+        <p class="rangmanch-count" id="rangmanchCount" aria-live="polite">27 source-linked records shown</p>
+        <div class="rangmanch-grid" id="rangmanchGrid"></div>
+      </div>
+      <div class="criticism-archive" id="criticismArchive">
+        <div class="criticism-intro"><p class="eyebrow">SAMIKSHA KAKSH · PLAYABLE ARCHIVE</p><h3>Videha Discussion &amp; Criticism</h3><p>Twelve verified Internet Archive audio/video collections. Choose a part, then select an item within the player.</p><a id="archiveDetailsLink" href="https://archive.org/details/videha-discussion-criticism-part-1" target="_blank" rel="noopener">Open Part 1 on Internet Archive ↗</a></div>
+        <div class="archive-player">
+          <p id="archivePlayerTitle" aria-live="polite">Playing collection: Part 1 of 12</p>
+          <iframe id="archivePlayer" src="https://archive.org/embed/videha-discussion-criticism-part-1?playlist=1" title="Videha Discussion and Criticism, Part 1 Internet Archive player" loading="lazy" allow="fullscreen" allowfullscreen></iframe>
+          <nav class="archive-parts" aria-label="Choose a Videha Discussion and Criticism playable collection">
+            <button class="active" type="button" data-archive-part="1" aria-pressed="true">Part 1</button>
+            <button type="button" data-archive-part="2" aria-pressed="false">Part 2</button>
+            <button type="button" data-archive-part="3" aria-pressed="false">Part 3</button>
+            <button type="button" data-archive-part="4" aria-pressed="false">Part 4</button>
+            <button type="button" data-archive-part="5" aria-pressed="false">Part 5</button>
+            <button type="button" data-archive-part="6" aria-pressed="false">Part 6</button>
+            <button type="button" data-archive-part="7" aria-pressed="false">Part 7</button>
+            <button type="button" data-archive-part="8" aria-pressed="false">Part 8</button>
+            <button type="button" data-archive-part="9" aria-pressed="false">Part 9</button>
+            <button type="button" data-archive-part="10" aria-pressed="false">Part 10</button>
+            <button type="button" data-archive-part="11" aria-pressed="false">Part 11</button>
+            <button type="button" data-archive-part="12" aria-pressed="false">Part 12</button>
+          </nav>
+        </div>
+      </div>
+    </section>
+
+    <section id="media" class="media-section" aria-labelledby="mediaTitle">
+      <div class="section-heading"><p class="eyebrow">VIDEHA MEDIA NETWORK</p><h2 id="mediaTitle">Four verified playlist collections</h2><p>These are the supplied official Videha and Gajendra Thakur YouTube destinations. Each opens its complete playlist page, without assigning unverified individual videos to a programme.</p></div>
+      <div class="media-grid">
+        <a href="https://www.youtube.com/@videha_ejournal/playlists" target="_blank" rel="noopener"><span>01</span><h3>Videha eJournal</h3><p>Videha’s general audio, video and literary programme playlists.</p><strong>Open playlists ↗</strong></a>
+        <a href="https://www.youtube.com/@videha-elearning/playlists" target="_blank" rel="noopener"><span>02</span><h3>Videha E-learning</h3><p>Playlist doorway for learning, classroom and guided-study media.</p><strong>Open playlists ↗</strong></a>
+        <a href="https://www.youtube.com/user/ggajendra71/playlists" target="_blank" rel="noopener"><span>03</span><h3>Gajendra Thakur</h3><p>Gajendra Thakur’s supplied YouTube playlist collection.</p><strong>Open playlists ↗</strong></a>
+        <a href="https://www.youtube.com/@accessible_videha/playlists" target="_blank" rel="noopener"><span>04</span><h3>Accessible Videha</h3><p>Accessible audio-visual and assistive programme playlists.</p><strong>Open playlists ↗</strong></a>
+      </div>
     </section>
 
     <section id="reader" class="reader-section">
-      <div class="reader-copy"><p class="eyebrow">ACCESSIBLE READING ROOM</p><h2>Read in the way that works for you.</h2><p>Select any passage on this page and use Listen. Translate the English interface into one of 41 languages through Google Translate. Reading controls increase size, spacing and contrast without changing the archive.</p><div class="reader-actions"><button id="readerListen">सुनू · Listen to this introduction</button><button id="readerTranslate">Translate with AI</button><button id="readerAccess">सहायक तकनीक · Assistive Tech</button></div><p class="note">Browser speech support varies. Translation opens Google Translate in a new tab so the original English remains available.</p></div>
+      <div class="reader-copy"><p class="eyebrow">ACCESSIBLE READING ROOM</p><h2>Read in the way that works for you.</h2><p>Select any passage on this page and use Listen. Translate the English interface into one of 41 languages through Google Translate. Reading controls increase size, spacing and contrast without changing the archive.</p><div class="reader-actions"><button id="readerListen"><span lang="mai-Deva">सुनू</span> · Listen to this introduction</button></div><p class="note">The persistent Translate and Assistive Tech controls remain in the header; this reading-room button starts narration. Browser speech support varies.</p></div>
       <img src="assets/VIDEHA%20ARCHIVES%20FINAL.PNG" alt="Videha archive visual composition" loading="lazy">
     </section>
 
     <section id="about" class="about-section">
       <p class="eyebrow">EDITORIAL IDENTITY</p><h2>Videha is the ground beneath the festival.</h2>
-      <p>© Gajendra Thakur, Editor, Videha Maithili eJournal, ISSN 2229-547X. This independent festival interface brings together books, translations, periodicals, criticism, theatre and research created or preserved within the Videha ecosystem.</p>
-      <div class="about-links"><a href="https://www.videha.co.in/">www.videha.co.in ↗</a><a href="https://videha-ejournal.github.io/videha/">Videha on GitHub Pages ↗</a><a href="https://www.youtube.com/@videha_ejournal/playlists">Audio, video & sign-language playlists ↗</a></div>
+      <p>© Gajendra Thakur, Editor, Videha Maithili eJournal, ISSN 2229-547X. This independent festival interface brings together books, translations, periodicals, criticism, theatre and research created or preserved within the Videha ecosystem. <strong>V.L.F.</strong> is the compact monogram; <strong>Videha Literature Festival</strong> remains the full primary name.</p>
+      <div class="about-links"><a href="https://www.videha.co.in/">www.videha.co.in ↗</a><a href="https://videha-ejournal.github.io/videha/">Videha on GitHub Pages ↗</a><a href="#media">Four Videha playlist collections ↑</a></div>
     </section>
   </main>
-  <footer><span>Videha Literature Festival</span><span id="lastUpdated"></span><a href="#top">Back to top ↑</a></footer>
+  <footer><span class="footer-brand"><img src="assets/vlf-logo.png" alt=""><strong>V.L.F.</strong> · Videha Literature Festival</span><span id="lastUpdated"></span><a href="#top">Back to top ↑</a></footer>
   <button id="toTop" class="to-top" aria-label="Back to top">↑</button>
   <div id="searchDialog" class="search-dialog" hidden role="dialog" aria-modal="true" aria-labelledby="searchDialogTitle"><div class="search-dialog-card"><button id="closeSearch" class="dialog-close" aria-label="Close search">×</button><p class="eyebrow">WHOLE FESTIVAL SEARCH</p><h2 id="searchDialogTitle">Results</h2><div id="searchResults"></div></div></div>
   <script src="app.js" type="module"></script>

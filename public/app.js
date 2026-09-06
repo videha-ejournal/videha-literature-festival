@@ -1,6 +1,8 @@
 const $ = (q, root = document) => root.querySelector(q);
 const $$ = (q, root = document) => [...root.querySelectorAll(q)];
 const archiveUrl = "https://www.videha.co.in/";
+const escapeHTML = (value = "") => String(value).replace(/[&<>'"]/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
+const languageAttribute = (value = "") => /[\u0900-\u097F]/.test(value) ? ' lang="mai-Deva"' : "";
 
 const parallelTomes = [
   { title: "A Parallel History of Mithila & Maithili Literature — Tome I", range: "Volumes 1–25", pothi: "https://store.pothi.com/book/gajendra-thakur-parallel-history-mithila-maithili-literature/", read: "https://videha-ejournal.github.io/VIDEHA_PARALLEL_HISTORY_TOME_I.html" },
@@ -65,32 +67,80 @@ playTitles.forEach(title => books.push({ title, category: "Theatre", detail: "Ma
   ["Maithili Thesaurus", "Language", "A cumulative Maithili reference work"],
   ["Gajendra Thakur Samagra", "Collected works", "Collected creative, critical, historical and translated writings"],
 ].forEach(([title, category, detail]) => books.push({ title, category, detail, url: "https://www.videha.co.in/gajendra-thakur-samagra.htm" }));
+books.forEach(book => { book.source = "curated"; book.author = book.author || "Gajendra Thakur · author, editor or translator"; });
 
 const covers = [
   ["decoding-the-panji.webp", "Decoding the Panji of Mithila I"], ["decoding-panji-ii-front.webp", "Decoding the Panji II"], ["decoding-panji-vol-iii-spread.webp", "Decoding the Panji III"], ["decoding-panji-vol-iv-spread.webp", "Decoding the Panji IV"], ["decoding-panji-vol-v-spread.webp", "Decoding the Panji V"], ["decoding-panji-vi-front.webp", "Decoding the Panji VI"], ["mithila-parallel-history-front-cover-6x9.webp", "A Parallel History"], ["parallel-philosophy-front-cover-6x9.webp", "Parallel Philosophy"], ["atmatattvaviveka-front-cover-en.webp", "Ātmatattvaviveka"], ["bhamati-front-cover-en.webp", "Bhāmatī"], ["nyaya-kusumanjali-front-cover-en.webp", "Nyāyakusumāñjali"], ["tattvacintamani-front-cover-en.webp", "Tattvacintāmaṇi"], ["cover-front.webp", "History of Mithila, Vajji & Anga"]
 ];
 
+const videoPlaylists = "https://www.youtube.com/@videha_ejournal/playlists";
+const elearningPlaylists = "https://www.youtube.com/@videha-elearning/playlists";
+const gajendraPlaylists = "https://www.youtube.com/user/ggajendra71/playlists";
+const accessiblePlaylists = "https://www.youtube.com/@accessible_videha/playlists";
+const rangmanchMedia = [
+  {group:"Playlists",title:"विदेह डोक्यूमेन्टरी / नाटक · Videha Documentary / Drama",kind:"playlist",id:"PLXne1kENT3DE",url:"https://www.youtube.com/playlist?list=PLXne1kENT3DE"},
+  {group:"Playlists",title:"विदेह नाट्य उत्सव · Videha Nāṭya Utsav",kind:"playlist",id:"PLWihOy3I0j1k",url:"https://youtube.com/playlist?list=PLWihOy3I0j1k"},
+  {group:"Playlists",title:"Animated Drama",kind:"playlist",id:"PLHsUvziVO3Y8",url:"https://www.youtube.com/playlist?list=PLHsUvziVO3Y8"},
+  {group:"Performances",title:"ममता गाबय गीत",kind:"video",id:"4jhaQ3Nw38I",url:"https://youtu.be/4jhaQ3Nw38I"},
+  {group:"Performances",title:"कन्यादान",kind:"video",id:"V3KWthhB6Kg",url:"https://youtu.be/V3KWthhB6Kg"},
+  {group:"Performances",title:"ललका पाग · भाग 1",kind:"video",id:"0IEgYJSe-q8",url:"https://youtu.be/0IEgYJSe-q8"},
+  {group:"Performances",title:"ललका पाग · भाग 2",kind:"video",id:"1lH_lubNQaI",url:"https://youtu.be/1lH_lubNQaI"},
+  {group:"Performances",title:"नचिकेताक एक छल राजा · भाग 1",kind:"video",id:"gzW8FTK6RQU",url:"https://youtu.be/gzW8FTK6RQU"},
+  {group:"Performances",title:"नचिकेताक एक छल राजा · भाग 2",kind:"video",id:"04Uqa_r04Z4",url:"https://youtu.be/04Uqa_r04Z4"},
+  {group:"Performances",title:"काठक लोक · महेन्द्र मलंगिया · भाग 1",kind:"video",id:"AMOU4nIk0AY",url:"https://youtu.be/AMOU4nIk0AY"},
+  {group:"Performances",title:"काठक लोक · महेन्द्र मलंगिया · भाग 2",kind:"video",id:"oCd3UxfiXvQ",url:"https://youtu.be/oCd3UxfiXvQ"},
+  {group:"Theatre network",title:"मिनाप · Mithila Natya Kala Parishad",kind:"link",url:"https://www.youtube.com/@mithilanatyakalaparishadmi5636"},
+  {group:"Theatre network",title:"मैलोरंग",kind:"link",url:"https://www.youtube.com/@praakshjha"},
+  {group:"Theatre network",title:"भंगिमा मैथिली थिएटर",kind:"link",url:"https://www.youtube.com/@bhangimamaithilitheatre9509"},
+  {group:"Theatre network",title:"मैथिली रंगमंच",kind:"link",url:"https://www.youtube.com/@maithilirangmanch9536"},
+  {group:"Theatre network",title:"कोकिल मंच",kind:"link",url:"https://www.youtube.com/@kokilmanch4330"},
+  {group:"Theatre network",title:"रफ कट्स · नचिकेता",kind:"link",url:"https://www.youtube.com/@UdayaSingh"},
+  {group:"Texts & criticism",title:"कुसमा-सलहेस आ अन्य छओ गोट नाटक · कुणाल",kind:"link",url:"https://archive.org/download/videha-petar_202604/Kunal%20Kusuma%20Salhesh%20and%206%20more%20plays.pdf"},
+  {group:"Texts & criticism",title:"भूत-प्रेतक नाट्यशाला · गजेन्द्र ठाकुरक मैथिली अनुवाद",kind:"link",url:"https://archive.org/download/449221-kani-hansiyau-ne/453362-bhoot-pretak-natyashala.pdf"},
+  {group:"Texts & criticism",title:"नबघर · चारिटा नाटक · बेचन ठाकुर",kind:"link",url:"https://archive.org/download/videha-petar_202604/Bechan%20Thakur%20Nav%20Ghar.pdf"},
+  {group:"Texts & criticism",title:"रोबोट · अनूदित साइंस-फिक्शन नाटक · योगेन्द्र पाठक ‘वियोगी’",kind:"link",url:"https://archive.org/download/dudh-pain-pharak-pharak-umesh-mandal/ROBOT_VIYOGI.pdf"},
+  {group:"Texts & criticism",title:"नाटककार लल्लन प्रसाद ठाकुर समग्र रचनावली",kind:"link",url:"https://archive.org/download/maithili_202209/Lallan_Pd_Thakur_Samagra.pdf"},
+  {group:"Texts & criticism",title:"विदेह सदेह 8 · मैथिली नाट्य उत्सव · देवनागरी",kind:"link",url:"https://archive.org/download/videha-shishu-utsav/VIDEHA_NATYA_UTSAV.pdf"},
+  {group:"Texts & criticism",title:"विदेह सदेह 8 · मैथिली नाट्य उत्सव · मिथिलाक्षर",kind:"link",url:"https://archive.org/download/videha-shishu-utsav/VIDEHA_NATYA_UTSAV_Tirhuta.pdf"},
+  {group:"Texts & criticism",title:"नाटक विशेषांक · Videha 72 · 15 December 2010",kind:"link",url:"https://archive.org/download/videha-15-12-2011/Videha_15_12_2010.pdf"},
+  {group:"Texts & criticism",title:"जिन्दगीक मोल पर टिप्पणी · Videha 354",kind:"link",url:"https://archive.org/download/videha-262/VIDEHA_354.pdf"},
+  {group:"Texts & criticism",title:"नन्द विलास रायक कथा, एकांकी आ टिप्पणी · Videha 361",kind:"link",url:"https://archive.org/download/videha-262/VIDEHA_361.pdf"},
+];
 const stages = [
-  {title:"Kavita Sabha", kicker:"POETRY", text:"Poetry across the current journal, historic issues, collected verse and audio recitation.", href:"https://www.videha.co.in/pothi.htm", link:"Enter the poetry shelves"},
-  {title:"Rangmanch", kicker:"THEATRE", text:"Nine bilingual illustrated plays, dramatic writing, stage traditions and recorded performance.", href:"https://www.videha.co.in/Audio_Video.htm", link:"Open theatre and performance"},
-  {title:"Shishu Utsav", kicker:"YOUNG READERS", text:"Thirty-seven illustrated novels, stories, quizzes and learning material for children and adolescents.", href:"https://www.videha.co.in/kids.htm", link:"Visit Shishu Utsav"},
-  {title:"Anuvad Manch", kicker:"TRANSLATION", text:"Sanskrit philosophical texts, multilingual literary translation and the movement between Maithili, English and scripts.", href:"https://www.videha.co.in/pothi.htm", link:"Explore translation"},
-  {title:"Samiksha Kaksh", kicker:"CRITICISM", text:"Author criticism, literary historiography, forgotten writers and arguments about the Maithili canon.", href:"https://www.videha.co.in/gajenthakur.htm", link:"Read Parallel History"},
-  {title:"Archive Assembly", kicker:"PUBLIC MEMORY", text:"Issue-by-issue discovery across 447 archived Videha issues and 37 Sadeha compilations.", href:"#issues", link:"Search the periodicals"},
+  {title:"Kavita Sabha", kicker:"POETRY", text:"Poetry across the current journal, historic issues, collected verse and recorded Videha programmes.", links:[{label:"Read poetry",url:"https://www.videha.co.in/verse.htm"},{label:"Videha eJournal video",url:videoPlaylists},{label:"Gajendra Thakur video",url:gajendraPlaylists}]},
+  {title:"Rangmanch", kicker:"THEATRE", text:"Named performance videos, drama playlists, theatre organisations, texts and criticism from Videha’s Audio/Video index.", links:[{label:"Open Rangmanch player",url:"#rangmanchArchive"},{label:"Original Audio/Video index",url:"https://www.videha.co.in/Audio_Video.htm"},{label:"Find Rang-Sangam",query:"Rang-Sangam"}]},
+  {title:"Shishu Utsav", kicker:"YOUNG READERS", text:"Thirty-seven illustrated novels, stories, quizzes and learning material for children and adolescents.", links:[{label:"Children’s programme",url:"https://www.videha.co.in/kids.htm"},{label:"Find children’s books",query:"Children"},{label:"Videha E-learning video",url:elearningPlaylists}]},
+  {title:"Anuvad Manch", kicker:"TRANSLATION", text:"Sanskrit philosophical texts, multilingual literary translation and movement between Maithili and English.", links:[{label:"Find translations",query:"translation"},{label:"Browse Pothi records",source:"pothi"},{label:"Videha E-learning video",url:elearningPlaylists}]},
+  {title:"Samiksha Kaksh", kicker:"CRITICISM", text:"Author criticism, literary historiography, forgotten writers and arguments about the Maithili canon.", links:[{label:"Discussion archive · 12 parts",url:"#criticismArchive"},{label:"Find criticism",query:"Criticism"},{label:"Find Parallel History",query:"Parallel History"}]},
+  {title:"Archive Assembly", kicker:"PUBLIC MEMORY", text:"Issue-by-issue discovery across 447 archived Videha issues and 37 Sadeha compilations.", links:[{label:"Search periodicals",url:"#issues"},{label:"Videha eJournal video",url:videoPlaylists},{label:"Gajendra Thakur video",url:gajendraPlaylists},{label:"Accessible Videha",url:accessiblePlaylists}]},
 ];
 
 let issueRecords = [];
 let bookLimit = 24;
 let issueLimit = 30;
+let currentBookSource = "all";
+let currentBookView = "shelf";
 
 function renderCovers(){ $("#coverRail").innerHTML = covers.map(([src,title]) => `<article class="cover-card"><img src="assets/${encodeURI(src)}" alt="Book cover: ${title}" loading="lazy"><span>${title}</span></article>`).join(""); }
-function renderStages(){ $("#stageGrid").innerHTML = stages.map(s => `<article class="stage-card"><p class="eyebrow">${s.kicker}</p><h3>${s.title}</h3><p>${s.text}</p><a href="${s.href}">${s.link} ↗</a></article>`).join(""); }
+function renderRangmanch(group="all"){
+  const records=group==="all"?rangmanchMedia:rangmanchMedia.filter(item=>item.group===group);
+  $("#rangmanchCount").textContent=`${records.length} source-linked records shown`;
+  $("#rangmanchGrid").innerHTML=records.map(item=>item.kind==="link"?`<a class="rangmanch-item" href="${escapeHTML(item.url)}" target="_blank" rel="noopener"><span>${escapeHTML(item.group)}</span><strong${languageAttribute(item.title)}>${escapeHTML(item.title)}</strong><em>Open source ↗</em></a>`:`<button class="rangmanch-item playable" type="button" data-rangmanch-kind="${item.kind}" data-rangmanch-id="${escapeHTML(item.id)}" data-rangmanch-title="${escapeHTML(item.title)}"><span>${escapeHTML(item.group)}</span><strong${languageAttribute(item.title)}>${escapeHTML(item.title)}</strong><em>Play here ▶</em></button>`).join("");
+}
 function renderBooks(reset=false){
   if(reset) bookLimit=24;
   const q=$("#bookSearch").value.trim().toLowerCase(), cat=$("#bookCategory").value;
-  const matches=books.filter(b=>(cat==="all"||b.category===cat)&&(!q||`${b.title} ${b.category} ${b.detail}`.toLowerCase().includes(q)));
+  const matches=books.filter(b=>(currentBookSource==="all"||b.source===currentBookSource)&&(cat==="all"||b.category===cat)&&(!q||`${b.title} ${b.category} ${b.detail} ${b.author||""}`.toLowerCase().includes(q)));
+  if(currentBookView==="bookwise")matches.sort((a,b)=>a.title.localeCompare(b.title,["mai","hi","en"],{sensitivity:"base",numeric:true}));
+  if(currentBookView==="authorwise")matches.sort((a,b)=>(a.author||"").localeCompare(b.author||"",["mai","hi","en"],{sensitivity:"base"})||a.title.localeCompare(b.title,["mai","hi","en"],{sensitivity:"base",numeric:true}));
   $("#bookCount").textContent=`Showing ${Math.min(bookLimit,matches.length)} of ${matches.length} indexed books and volumes`;
-  $("#bookGrid").innerHTML=matches.slice(0,bookLimit).map(b=>`<article class="book-card"><span class="tag">${b.category}</span><h3>${b.title}</h3><p>${b.detail}</p>${b.links?`<div class="book-links">${b.links.map(link=>`<a href="${link.url}" target="_blank" rel="noopener">${link.label} ↗</a>`).join("")}</div>`:`<a href="${b.url}" target="_blank" rel="noopener">Open publication record ↗</a>`}</article>`).join("") || "<p>No books match those filters.</p>";
+  let previousAuthor="";
+  $("#bookGrid").classList.toggle("authorwise",currentBookView==="authorwise");
+  $("#bookGrid").innerHTML=matches.slice(0,bookLimit).map(b=>{
+    const authorHeading=currentBookView==="authorwise"&&b.author!==previousAuthor?`<h3 class="author-heading"${languageAttribute(b.author)}>${escapeHTML(b.author||"Author not encoded in source catalogue")}</h3>`:"";
+    previousAuthor=b.author;
+    return `${authorHeading}<article class="book-card"><span class="tag">${escapeHTML(b.category)}</span><h3${languageAttribute(b.title)}>${escapeHTML(b.title)}</h3><p${languageAttribute(b.detail)}>${escapeHTML(b.detail)}</p>${currentBookView!=="authorwise"&&b.author?`<span class="byline"${languageAttribute(b.author)}>${escapeHTML(b.author)}</span>`:""}${b.links?`<div class="book-links">${b.links.map(link=>`<a href="${escapeHTML(link.url)}" target="_blank" rel="noopener">${escapeHTML(link.label)} ↗</a>`).join("")}</div>`:`<a href="${escapeHTML(b.url)}" target="_blank" rel="noopener">Open publication record ↗</a>`}</article>`;
+  }).join("") || "<p>No books match those filters.</p>";
   $("#moreBooks").hidden=bookLimit>=matches.length;
 }
 function renderIssues(reset=false){
@@ -113,43 +163,82 @@ function listen(text){
 function openTranslate(){ const lang=$("#language").value; const url=`https://translate.google.com/translate?sl=en&tl=${encodeURIComponent(lang)}&u=${encodeURIComponent(location.href)}`; window.open(url,"_blank","noopener"); }
 function globalSearch(q){
   q=q.trim().toLowerCase(); if(!q)return;
-  const foundBooks=books.filter(b=>`${b.title} ${b.category} ${b.detail}`.toLowerCase().includes(q)).slice(0,20);
-  const foundIssues=issueRecords.filter(x=>`${x.publication} ${x.issue} ${x.title} ${x.date||""} ${x.year||""}`.toLowerCase().includes(q)).slice(0,20);
+  const foundBooks=books.filter(b=>`${b.title} ${b.category} ${b.detail} ${b.author||""}`.toLowerCase().includes(q)).slice(0,60);
+  const foundIssues=issueRecords.filter(x=>`${x.publication} ${x.issue} ${x.title} ${x.date||""} ${x.year||""}`.toLowerCase().includes(q)).slice(0,60);
   const foundStages=stages.filter(s=>`${s.title} ${s.kicker} ${s.text}`.toLowerCase().includes(q));
-  const all=[...foundBooks.map(x=>({kind:"Book",title:x.title,desc:`${x.category} · ${x.detail}`,url:x.url})),...foundIssues.map(x=>({kind:"Issue",title:x.title,desc:`${x.publication} ${x.issue} · ${x.date||"undated"}`,url:x.source})),...foundStages.map(x=>({kind:"Stage",title:x.title,desc:x.text,url:x.href}))];
+  const foundRangmanch=rangmanchMedia.filter(item=>`${item.group} ${item.title}`.toLowerCase().includes(q)).slice(0,30);
+  const all=[...foundBooks.map(x=>({kind:"Book",title:x.title,desc:`${x.category} · ${x.detail}`,url:x.url})),...foundIssues.map(x=>({kind:"Issue",title:x.title,desc:`${x.publication} ${x.issue} · ${x.date||"undated"}`,url:x.source})),...foundStages.map(x=>({kind:"Stage",title:x.title,desc:x.text,url:x.links[0].url||"#stages"})),...foundRangmanch.map(x=>({kind:"Rangmanch",title:x.title,desc:x.group,url:x.url}))];
   $("#searchDialogTitle").textContent=`Results for “${q}”`;
   $("#searchResults").innerHTML=all.length?all.map(x=>`<article class="search-result"><span class="kind">${x.kind}</span><div><h3>${x.title}</h3><p>${x.desc}</p></div><a href="${x.url}" ${x.url.startsWith("http")?'target="_blank" rel="noopener"':""}>Open ↗</a></article>`).join(""):"<p>No matching books, issues or festival stages were found.</p>";
   $("#searchDialog").hidden=false; document.body.style.overflow="hidden"; $("#closeSearch").focus();
 }
 
 async function init(){
-  renderCovers(); renderStages();
+  renderCovers(); renderRangmanch();
   Object.entries(langs).forEach(([code,name])=>$("#language").insertAdjacentHTML("beforeend",`<option value="${code}">${name}</option>`));
   try{
     const pothi=await fetch("data/pothi.json").then(r=>r.json());
-    const seen=new Set(books.map(b=>`${b.title}|${b.category}`));
-    pothi.forEach(x=>{const category=/गजेन्द्र ठाकुर|Gajendra Thakur/i.test(x.author)?"Gajendra Thakur archive":"Videha Pothi";const key=`${x.title}|${category}`;if(!seen.has(key)){books.push({title:x.title,category,detail:x.author||"Videha Pothi archive record",url:x.url||"https://www.videha.co.in/pothi.htm"});seen.add(key)}});
+    pothi.forEach(x=>{const category=/गजेन्द्र ठाकुर|Gajendra Thakur/i.test(x.author)?"Gajendra Thakur archive":"Videha Pothi";books.push({title:x.title,category,detail:x.author||"Videha Pothi archive record",author:x.author||"Author not stated in source catalogue",url:x.url||"https://www.videha.co.in/pothi.htm",source:"pothi"});});
+    $("#pothiCount").textContent=pothi.length.toLocaleString("en-IN");
   }catch{}
   try{
     const githubBooks=await fetch("data/github-library.json").then(r=>r.json());
-    const seenUrls=new Set(books.map(b=>b.url));
-    githubBooks.forEach(x=>{if(!seenUrls.has(x.url)){books.push(x);seenUrls.add(x.url)}});
+    githubBooks.forEach(x=>books.push({...x,author:"GitHub catalogue · author not encoded",source:"github"}));
+    $("#githubCount").textContent=githubBooks.length.toLocaleString("en-IN");
   }catch{}
+  $("#curatedCount").textContent=books.filter(book=>book.source==="curated").length.toLocaleString("en-IN");
+  $("#allBookCount").textContent=books.length.toLocaleString("en-IN");
+  $("#searchStatus").textContent=`Search ${books.length.toLocaleString("en-IN")} book and study records, 485 Videha–Sadeha files, and ${rangmanchMedia.length} Rangmanch records.`;
   [...new Set(books.map(b=>b.category))].sort().forEach(c=>$("#bookCategory").insertAdjacentHTML("beforeend",`<option>${c}</option>`));
   renderBooks();
   try{
     const data=await fetch("data/archive.json").then(r=>r.json()); issueRecords=data.archive; $("#videhaCount").textContent=data.archiveMaxVideha; $("#lastUpdated").textContent=`Archive data updated ${new Date(data.generated).toLocaleDateString("en-IN",{dateStyle:"medium"})}`;
     [...new Set(issueRecords.map(x=>x.year).filter(Boolean))].sort((a,b)=>b-a).forEach(y=>$("#issueYear").insertAdjacentHTML("beforeend",`<option>${y}</option>`)); renderIssues();
   }catch(e){$("#issueCount").textContent="Archive index could not be loaded.";}
+  const requestedQuery=new URLSearchParams(location.search).get("q");
+  if(requestedQuery){$("#globalSearch").value=requestedQuery;globalSearch(requestedQuery);}
 }
 
 $("#bookSearch").addEventListener("input",()=>renderBooks(true)); $("#bookCategory").addEventListener("change",()=>renderBooks(true)); $("#clearBooks").addEventListener("click",()=>{$("#bookSearch").value="";$("#bookCategory").value="all";renderBooks(true)}); $("#moreBooks").addEventListener("click",()=>{bookLimit+=24;renderBooks()});
+$$('[data-book-source]').forEach(button=>button.addEventListener("click",()=>{currentBookSource=button.dataset.bookSource;$$('[data-book-source]').forEach(item=>item.classList.toggle("active",item===button));renderBooks(true)}));
+$$('[data-book-view]').forEach(button=>button.addEventListener("click",()=>{currentBookView=button.dataset.bookView;$$('[data-book-view]').forEach(item=>{const active=item===button;item.classList.toggle("active",active);item.setAttribute("aria-pressed",active)});renderBooks(true)}));
+$$('[data-archive-part]').forEach(button=>button.addEventListener("click",()=>{
+  const part=button.dataset.archivePart;
+  const identifier=`videha-discussion-criticism-part-${part}`;
+  $("#archivePlayer").src=`https://archive.org/embed/${identifier}?playlist=1`;
+  $("#archivePlayer").title=`Videha Discussion and Criticism, Part ${part} Internet Archive player`;
+  $("#archivePlayerTitle").textContent=`Playing collection: Part ${part} of 12`;
+  $("#archiveDetailsLink").href=`https://archive.org/details/${identifier}`;
+  $("#archiveDetailsLink").textContent=`Open Part ${part} on Internet Archive ↗`;
+  $$('[data-archive-part]').forEach(item=>{const active=item===button;item.classList.toggle("active",active);item.setAttribute("aria-pressed",active)});
+}));
+$$('[data-rangmanch-filter]').forEach(button=>button.addEventListener("click",()=>{
+  $$('[data-rangmanch-filter]').forEach(item=>{const active=item===button;item.classList.toggle("active",active);item.setAttribute("aria-pressed",active)});
+  renderRangmanch(button.dataset.rangmanchFilter);
+}));
+$("#rangmanchGrid").addEventListener("click",event=>{
+  const control=event.target.closest("[data-rangmanch-kind]");
+  if(!control)return;
+  const isPlaylist=control.dataset.rangmanchKind==="playlist";
+  $("#rangmanchPlayer").src=isPlaylist?`https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(control.dataset.rangmanchId)}`:`https://www.youtube-nocookie.com/embed/${encodeURIComponent(control.dataset.rangmanchId)}`;
+  $("#rangmanchPlayer").title=`Rangmanch player: ${control.dataset.rangmanchTitle}`;
+  $("#rangmanchPlayerTitle").textContent=`Now selected: ${control.dataset.rangmanchTitle}`;
+  $("#rangmanchPlayer").scrollIntoView({behavior:"smooth",block:"center"});
+});
 $("#issueSearch").addEventListener("input",()=>renderIssues(true)); $("#publication").addEventListener("change",()=>renderIssues(true)); $("#issueYear").addEventListener("change",()=>renderIssues(true)); $("#moreIssues").addEventListener("click",()=>{issueLimit+=30;renderIssues()});
 $("#globalSearchForm").addEventListener("submit",e=>{e.preventDefault();globalSearch($("#globalSearch").value)}); $("#closeSearch").addEventListener("click",()=>{$("#searchDialog").hidden=true;document.body.style.overflow=""});
 $("#listenBtn").addEventListener("click",()=>listen()); $("#readerListen").addEventListener("click",()=>listen($(".reader-copy p:nth-of-type(2)").textContent));
-$("#translateBtn").addEventListener("click",()=>togglePanel("#translatePanel")); $("#readerTranslate").addEventListener("click",()=>togglePanel("#translatePanel")); $("#goTranslate").addEventListener("click",openTranslate);
-$("#accessBtn").addEventListener("click",()=>togglePanel("#accessPanel")); $("#readerAccess").addEventListener("click",()=>togglePanel("#accessPanel"));
+$("#translateBtn").addEventListener("click",()=>togglePanel("#translatePanel")); $("#goTranslate").addEventListener("click",openTranslate);
+$("#accessBtn").addEventListener("click",()=>togglePanel("#accessPanel"));
 $("#accessPanel").addEventListener("click",e=>{const a=e.target.dataset.access;if(!a)return;if(a==="size")document.body.classList.toggle("large");if(a==="spacing")document.body.classList.toggle("spacious");if(a==="contrast")document.body.classList.toggle("contrast");if(a==="reset")document.body.className="";});
+document.addEventListener("click",event=>{
+  const queryControl=event.target.closest("[data-book-query]");
+  if(queryControl){event.preventDefault();currentBookSource="all";$$('[data-book-source]').forEach(item=>item.classList.toggle("active",item.dataset.bookSource==="all"));$("#bookSearch").value=queryControl.dataset.bookQuery;$("#bookCategory").value="all";renderBooks(true);$("#books").scrollIntoView({behavior:"smooth"});return;}
+  const sourceControl=event.target.closest("[data-book-source-jump]");
+  if(sourceControl){event.preventDefault();currentBookSource=sourceControl.dataset.bookSourceJump;$$('[data-book-source]').forEach(item=>item.classList.toggle("active",item.dataset.bookSource===currentBookSource));$("#bookSearch").value="";$("#bookCategory").value="all";renderBooks(true);$("#books").scrollIntoView({behavior:"smooth"});return;}
+  const issueControl=event.target.closest("[data-issue-publication]");
+  if(issueControl){$("#publication").value=issueControl.dataset.issuePublication;renderIssues(true);}
+});
 $(".menu-toggle").addEventListener("click",e=>{const open=$("#primary-nav").classList.toggle("open");e.currentTarget.setAttribute("aria-expanded",open)}); $$("#primary-nav a").forEach(a=>a.addEventListener("click",()=>$("#primary-nav").classList.remove("open")));
 window.addEventListener("scroll",()=>$("#toTop").classList.toggle("show",scrollY>700),{passive:true}); $("#toTop").addEventListener("click",()=>scrollTo({top:0,behavior:"smooth"}));
 init();
