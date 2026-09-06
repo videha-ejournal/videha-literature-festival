@@ -168,6 +168,16 @@ async function init(){
 $("#bookSearch").addEventListener("input",()=>renderBooks(true)); $("#bookCategory").addEventListener("change",()=>renderBooks(true)); $("#clearBooks").addEventListener("click",()=>{$("#bookSearch").value="";$("#bookCategory").value="all";renderBooks(true)}); $("#moreBooks").addEventListener("click",()=>{bookLimit+=24;renderBooks()});
 $$('[data-book-source]').forEach(button=>button.addEventListener("click",()=>{currentBookSource=button.dataset.bookSource;$$('[data-book-source]').forEach(item=>item.classList.toggle("active",item===button));renderBooks(true)}));
 $$('[data-book-view]').forEach(button=>button.addEventListener("click",()=>{currentBookView=button.dataset.bookView;$$('[data-book-view]').forEach(item=>{const active=item===button;item.classList.toggle("active",active);item.setAttribute("aria-pressed",active)});renderBooks(true)}));
+$$('[data-archive-part]').forEach(button=>button.addEventListener("click",()=>{
+  const part=button.dataset.archivePart;
+  const identifier=`videha-discussion-criticism-part-${part}`;
+  $("#archivePlayer").src=`https://archive.org/embed/${identifier}?playlist=1`;
+  $("#archivePlayer").title=`Videha Discussion and Criticism, Part ${part} Internet Archive player`;
+  $("#archivePlayerTitle").textContent=`Playing collection: Part ${part} of 12`;
+  $("#archiveDetailsLink").href=`https://archive.org/details/${identifier}`;
+  $("#archiveDetailsLink").textContent=`Open Part ${part} on Internet Archive ↗`;
+  $$('[data-archive-part]').forEach(item=>{const active=item===button;item.classList.toggle("active",active);item.setAttribute("aria-pressed",active)});
+}));
 $("#issueSearch").addEventListener("input",()=>renderIssues(true)); $("#publication").addEventListener("change",()=>renderIssues(true)); $("#issueYear").addEventListener("change",()=>renderIssues(true)); $("#moreIssues").addEventListener("click",()=>{issueLimit+=30;renderIssues()});
 $("#globalSearchForm").addEventListener("submit",e=>{e.preventDefault();globalSearch($("#globalSearch").value)}); $("#closeSearch").addEventListener("click",()=>{$("#searchDialog").hidden=true;document.body.style.overflow=""});
 $("#listenBtn").addEventListener("click",()=>listen()); $("#readerListen").addEventListener("click",()=>listen($(".reader-copy p:nth-of-type(2)").textContent));
