@@ -74,13 +74,16 @@ const covers = [
 ];
 
 const videoPlaylists = "https://www.youtube.com/@videha_ejournal/playlists";
+const elearningPlaylists = "https://www.youtube.com/@videha-elearning/playlists";
+const gajendraPlaylists = "https://www.youtube.com/user/ggajendra71/playlists";
+const accessiblePlaylists = "https://www.youtube.com/@accessible_videha/playlists";
 const stages = [
-  {title:"Kavita Sabha", kicker:"POETRY", text:"Poetry across the current journal, historic issues, collected verse and recorded Videha programmes.", links:[{label:"Read poetry",url:"https://www.videha.co.in/verse.htm"},{label:"Video playlists",url:videoPlaylists}]},
-  {title:"Rangmanch", kicker:"THEATRE", text:"Nine bilingual illustrated plays, dramatic writing, stage traditions and recorded performance.", links:[{label:"Theatre & performance",url:"https://www.videha.co.in/Audio_Video.htm"},{label:"Find Rang-Sangam",query:"Rang-Sangam"},{label:"Video playlists",url:videoPlaylists}]},
-  {title:"Shishu Utsav", kicker:"YOUNG READERS", text:"Thirty-seven illustrated novels, stories, quizzes and learning material for children and adolescents.", links:[{label:"Children’s programme",url:"https://www.videha.co.in/kids.htm"},{label:"Find children’s books",query:"Children"}]},
-  {title:"Anuvad Manch", kicker:"TRANSLATION", text:"Sanskrit philosophical texts, multilingual literary translation and movement between Maithili and English.", links:[{label:"Find translations",query:"translation"},{label:"Browse Pothi records",source:"pothi"}]},
+  {title:"Kavita Sabha", kicker:"POETRY", text:"Poetry across the current journal, historic issues, collected verse and recorded Videha programmes.", links:[{label:"Read poetry",url:"https://www.videha.co.in/verse.htm"},{label:"Videha eJournal video",url:videoPlaylists},{label:"Gajendra Thakur video",url:gajendraPlaylists}]},
+  {title:"Rangmanch", kicker:"THEATRE", text:"Nine bilingual illustrated plays, dramatic writing, stage traditions and recorded performance.", links:[{label:"Theatre & performance",url:"https://www.videha.co.in/Audio_Video.htm"},{label:"Find Rang-Sangam",query:"Rang-Sangam"},{label:"Videha eJournal video",url:videoPlaylists},{label:"Accessible Videha",url:accessiblePlaylists}]},
+  {title:"Shishu Utsav", kicker:"YOUNG READERS", text:"Thirty-seven illustrated novels, stories, quizzes and learning material for children and adolescents.", links:[{label:"Children’s programme",url:"https://www.videha.co.in/kids.htm"},{label:"Find children’s books",query:"Children"},{label:"Videha E-learning video",url:elearningPlaylists}]},
+  {title:"Anuvad Manch", kicker:"TRANSLATION", text:"Sanskrit philosophical texts, multilingual literary translation and movement between Maithili and English.", links:[{label:"Find translations",query:"translation"},{label:"Browse Pothi records",source:"pothi"},{label:"Videha E-learning video",url:elearningPlaylists}]},
   {title:"Samiksha Kaksh", kicker:"CRITICISM", text:"Author criticism, literary historiography, forgotten writers and arguments about the Maithili canon.", links:[{label:"Find criticism",query:"Criticism"},{label:"Find Parallel History",query:"Parallel History"}]},
-  {title:"Archive Assembly", kicker:"PUBLIC MEMORY", text:"Issue-by-issue discovery across 447 archived Videha issues and 37 Sadeha compilations.", links:[{label:"Search periodicals",url:"#issues"},{label:"Video playlists",url:videoPlaylists}]},
+  {title:"Archive Assembly", kicker:"PUBLIC MEMORY", text:"Issue-by-issue discovery across 447 archived Videha issues and 37 Sadeha compilations.", links:[{label:"Search periodicals",url:"#issues"},{label:"Videha eJournal video",url:videoPlaylists},{label:"Gajendra Thakur video",url:gajendraPlaylists},{label:"Accessible Videha",url:accessiblePlaylists}]},
 ];
 
 let issueRecords = [];
