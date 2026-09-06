@@ -77,9 +77,38 @@ const videoPlaylists = "https://www.youtube.com/@videha_ejournal/playlists";
 const elearningPlaylists = "https://www.youtube.com/@videha-elearning/playlists";
 const gajendraPlaylists = "https://www.youtube.com/user/ggajendra71/playlists";
 const accessiblePlaylists = "https://www.youtube.com/@accessible_videha/playlists";
+const rangmanchMedia = [
+  {group:"Playlists",title:"विदेह डोक्यूमेन्टरी / नाटक · Videha Documentary / Drama",kind:"playlist",id:"PLXne1kENT3DE",url:"https://www.youtube.com/playlist?list=PLXne1kENT3DE"},
+  {group:"Playlists",title:"विदेह नाट्य उत्सव · Videha Nāṭya Utsav",kind:"playlist",id:"PLWihOy3I0j1k",url:"https://youtube.com/playlist?list=PLWihOy3I0j1k"},
+  {group:"Playlists",title:"Animated Drama",kind:"playlist",id:"PLHsUvziVO3Y8",url:"https://www.youtube.com/playlist?list=PLHsUvziVO3Y8"},
+  {group:"Performances",title:"ममता गाबय गीत",kind:"video",id:"4jhaQ3Nw38I",url:"https://youtu.be/4jhaQ3Nw38I"},
+  {group:"Performances",title:"कन्यादान",kind:"video",id:"V3KWthhB6Kg",url:"https://youtu.be/V3KWthhB6Kg"},
+  {group:"Performances",title:"ललका पाग · भाग 1",kind:"video",id:"0IEgYJSe-q8",url:"https://youtu.be/0IEgYJSe-q8"},
+  {group:"Performances",title:"ललका पाग · भाग 2",kind:"video",id:"1lH_lubNQaI",url:"https://youtu.be/1lH_lubNQaI"},
+  {group:"Performances",title:"नचिकेताक एक छल राजा · भाग 1",kind:"video",id:"gzW8FTK6RQU",url:"https://youtu.be/gzW8FTK6RQU"},
+  {group:"Performances",title:"नचिकेताक एक छल राजा · भाग 2",kind:"video",id:"04Uqa_r04Z4",url:"https://youtu.be/04Uqa_r04Z4"},
+  {group:"Performances",title:"काठक लोक · महेन्द्र मलंगिया · भाग 1",kind:"video",id:"AMOU4nIk0AY",url:"https://youtu.be/AMOU4nIk0AY"},
+  {group:"Performances",title:"काठक लोक · महेन्द्र मलंगिया · भाग 2",kind:"video",id:"oCd3UxfiXvQ",url:"https://youtu.be/oCd3UxfiXvQ"},
+  {group:"Theatre network",title:"मिनाप · Mithila Natya Kala Parishad",kind:"link",url:"https://www.youtube.com/@mithilanatyakalaparishadmi5636"},
+  {group:"Theatre network",title:"मैलोरंग",kind:"link",url:"https://www.youtube.com/@praakshjha"},
+  {group:"Theatre network",title:"भंगिमा मैथिली थिएटर",kind:"link",url:"https://www.youtube.com/@bhangimamaithilitheatre9509"},
+  {group:"Theatre network",title:"मैथिली रंगमंच",kind:"link",url:"https://www.youtube.com/@maithilirangmanch9536"},
+  {group:"Theatre network",title:"कोकिल मंच",kind:"link",url:"https://www.youtube.com/@kokilmanch4330"},
+  {group:"Theatre network",title:"रफ कट्स · नचिकेता",kind:"link",url:"https://www.youtube.com/@UdayaSingh"},
+  {group:"Texts & criticism",title:"कुसमा-सलहेस आ अन्य छओ गोट नाटक · कुणाल",kind:"link",url:"https://archive.org/download/videha-petar_202604/Kunal%20Kusuma%20Salhesh%20and%206%20more%20plays.pdf"},
+  {group:"Texts & criticism",title:"भूत-प्रेतक नाट्यशाला · गजेन्द्र ठाकुरक मैथिली अनुवाद",kind:"link",url:"https://archive.org/download/449221-kani-hansiyau-ne/453362-bhoot-pretak-natyashala.pdf"},
+  {group:"Texts & criticism",title:"नबघर · चारिटा नाटक · बेचन ठाकुर",kind:"link",url:"https://archive.org/download/videha-petar_202604/Bechan%20Thakur%20Nav%20Ghar.pdf"},
+  {group:"Texts & criticism",title:"रोबोट · अनूदित साइंस-फिक्शन नाटक · योगेन्द्र पाठक ‘वियोगी’",kind:"link",url:"https://archive.org/download/dudh-pain-pharak-pharak-umesh-mandal/ROBOT_VIYOGI.pdf"},
+  {group:"Texts & criticism",title:"नाटककार लल्लन प्रसाद ठाकुर समग्र रचनावली",kind:"link",url:"https://archive.org/download/maithili_202209/Lallan_Pd_Thakur_Samagra.pdf"},
+  {group:"Texts & criticism",title:"विदेह सदेह 8 · मैथिली नाट्य उत्सव · देवनागरी",kind:"link",url:"https://archive.org/download/videha-shishu-utsav/VIDEHA_NATYA_UTSAV.pdf"},
+  {group:"Texts & criticism",title:"विदेह सदेह 8 · मैथिली नाट्य उत्सव · मिथिलाक्षर",kind:"link",url:"https://archive.org/download/videha-shishu-utsav/VIDEHA_NATYA_UTSAV_Tirhuta.pdf"},
+  {group:"Texts & criticism",title:"नाटक विशेषांक · Videha 72 · 15 December 2010",kind:"link",url:"https://archive.org/download/videha-15-12-2011/Videha_15_12_2010.pdf"},
+  {group:"Texts & criticism",title:"जिन्दगीक मोल पर टिप्पणी · Videha 354",kind:"link",url:"https://archive.org/download/videha-262/VIDEHA_354.pdf"},
+  {group:"Texts & criticism",title:"नन्द विलास रायक कथा, एकांकी आ टिप्पणी · Videha 361",kind:"link",url:"https://archive.org/download/videha-262/VIDEHA_361.pdf"},
+];
 const stages = [
   {title:"Kavita Sabha", kicker:"POETRY", text:"Poetry across the current journal, historic issues, collected verse and recorded Videha programmes.", links:[{label:"Read poetry",url:"https://www.videha.co.in/verse.htm"},{label:"Videha eJournal video",url:videoPlaylists},{label:"Gajendra Thakur video",url:gajendraPlaylists}]},
-  {title:"Rangmanch", kicker:"THEATRE", text:"Nine bilingual illustrated plays, dramatic writing, stage traditions and recorded performance.", links:[{label:"Theatre & performance",url:"https://www.videha.co.in/Audio_Video.htm"},{label:"Find Rang-Sangam",query:"Rang-Sangam"},{label:"Videha eJournal video",url:videoPlaylists},{label:"Accessible Videha",url:accessiblePlaylists}]},
+  {title:"Rangmanch", kicker:"THEATRE", text:"Named performance videos, drama playlists, theatre organisations, texts and criticism from Videha’s Audio/Video index.", links:[{label:"Open Rangmanch player",url:"#rangmanchArchive"},{label:"Original Audio/Video index",url:"https://www.videha.co.in/Audio_Video.htm"},{label:"Find Rang-Sangam",query:"Rang-Sangam"}]},
   {title:"Shishu Utsav", kicker:"YOUNG READERS", text:"Thirty-seven illustrated novels, stories, quizzes and learning material for children and adolescents.", links:[{label:"Children’s programme",url:"https://www.videha.co.in/kids.htm"},{label:"Find children’s books",query:"Children"},{label:"Videha E-learning video",url:elearningPlaylists}]},
   {title:"Anuvad Manch", kicker:"TRANSLATION", text:"Sanskrit philosophical texts, multilingual literary translation and movement between Maithili and English.", links:[{label:"Find translations",query:"translation"},{label:"Browse Pothi records",source:"pothi"},{label:"Videha E-learning video",url:elearningPlaylists}]},
   {title:"Samiksha Kaksh", kicker:"CRITICISM", text:"Author criticism, literary historiography, forgotten writers and arguments about the Maithili canon.", links:[{label:"Discussion archive · 12 parts",url:"#criticismArchive"},{label:"Find criticism",query:"Criticism"},{label:"Find Parallel History",query:"Parallel History"}]},
@@ -94,6 +123,11 @@ let currentBookView = "shelf";
 
 function renderCovers(){ $("#coverRail").innerHTML = covers.map(([src,title]) => `<article class="cover-card"><img src="assets/${encodeURI(src)}" alt="Book cover: ${title}" loading="lazy"><span>${title}</span></article>`).join(""); }
 function renderStages(){ $("#stageGrid").innerHTML = stages.map(s => `<article class="stage-card"><p class="eyebrow">${escapeHTML(s.kicker)}</p><h3>${escapeHTML(s.title)}</h3><p>${escapeHTML(s.text)}</p><div class="stage-links">${s.links.map(link => link.query ? `<button type="button" data-book-query="${escapeHTML(link.query)}">${escapeHTML(link.label)} ↓</button>` : link.source ? `<button type="button" data-book-source-jump="${escapeHTML(link.source)}">${escapeHTML(link.label)} ↓</button>` : `<a href="${escapeHTML(link.url)}" ${link.url.startsWith("http")?'target="_blank" rel="noopener"':""}>${escapeHTML(link.label)} ↗</a>`).join("")}</div></article>`).join(""); }
+function renderRangmanch(group="all"){
+  const records=group==="all"?rangmanchMedia:rangmanchMedia.filter(item=>item.group===group);
+  $("#rangmanchCount").textContent=`${records.length} source-linked records shown`;
+  $("#rangmanchGrid").innerHTML=records.map(item=>item.kind==="link"?`<a class="rangmanch-item" href="${escapeHTML(item.url)}" target="_blank" rel="noopener"><span>${escapeHTML(item.group)}</span><strong${languageAttribute(item.title)}>${escapeHTML(item.title)}</strong><em>Open source ↗</em></a>`:`<button class="rangmanch-item playable" type="button" data-rangmanch-kind="${item.kind}" data-rangmanch-id="${escapeHTML(item.id)}" data-rangmanch-title="${escapeHTML(item.title)}"><span>${escapeHTML(item.group)}</span><strong${languageAttribute(item.title)}>${escapeHTML(item.title)}</strong><em>Play here ▶</em></button>`).join("");
+}
 function renderBooks(reset=false){
   if(reset) bookLimit=24;
   const q=$("#bookSearch").value.trim().toLowerCase(), cat=$("#bookCategory").value;
@@ -133,14 +167,15 @@ function globalSearch(q){
   const foundBooks=books.filter(b=>`${b.title} ${b.category} ${b.detail} ${b.author||""}`.toLowerCase().includes(q)).slice(0,60);
   const foundIssues=issueRecords.filter(x=>`${x.publication} ${x.issue} ${x.title} ${x.date||""} ${x.year||""}`.toLowerCase().includes(q)).slice(0,60);
   const foundStages=stages.filter(s=>`${s.title} ${s.kicker} ${s.text}`.toLowerCase().includes(q));
-  const all=[...foundBooks.map(x=>({kind:"Book",title:x.title,desc:`${x.category} · ${x.detail}`,url:x.url})),...foundIssues.map(x=>({kind:"Issue",title:x.title,desc:`${x.publication} ${x.issue} · ${x.date||"undated"}`,url:x.source})),...foundStages.map(x=>({kind:"Stage",title:x.title,desc:x.text,url:x.links[0].url||"#stages"}))];
+  const foundRangmanch=rangmanchMedia.filter(item=>`${item.group} ${item.title}`.toLowerCase().includes(q)).slice(0,30);
+  const all=[...foundBooks.map(x=>({kind:"Book",title:x.title,desc:`${x.category} · ${x.detail}`,url:x.url})),...foundIssues.map(x=>({kind:"Issue",title:x.title,desc:`${x.publication} ${x.issue} · ${x.date||"undated"}`,url:x.source})),...foundStages.map(x=>({kind:"Stage",title:x.title,desc:x.text,url:x.links[0].url||"#stages"})),...foundRangmanch.map(x=>({kind:"Rangmanch",title:x.title,desc:x.group,url:x.url}))];
   $("#searchDialogTitle").textContent=`Results for “${q}”`;
   $("#searchResults").innerHTML=all.length?all.map(x=>`<article class="search-result"><span class="kind">${x.kind}</span><div><h3>${x.title}</h3><p>${x.desc}</p></div><a href="${x.url}" ${x.url.startsWith("http")?'target="_blank" rel="noopener"':""}>Open ↗</a></article>`).join(""):"<p>No matching books, issues or festival stages were found.</p>";
   $("#searchDialog").hidden=false; document.body.style.overflow="hidden"; $("#closeSearch").focus();
 }
 
 async function init(){
-  renderCovers(); renderStages();
+  renderCovers(); renderStages(); renderRangmanch();
   Object.entries(langs).forEach(([code,name])=>$("#language").insertAdjacentHTML("beforeend",`<option value="${code}">${name}</option>`));
   try{
     const pothi=await fetch("data/pothi.json").then(r=>r.json());
@@ -154,7 +189,7 @@ async function init(){
   }catch{}
   $("#curatedCount").textContent=books.filter(book=>book.source==="curated").length.toLocaleString("en-IN");
   $("#allBookCount").textContent=books.length.toLocaleString("en-IN");
-  $("#searchStatus").textContent=`Search ${books.length.toLocaleString("en-IN")} book and study records plus 485 Videha–Sadeha files.`;
+  $("#searchStatus").textContent=`Search ${books.length.toLocaleString("en-IN")} book and study records, 485 Videha–Sadeha files, and ${rangmanchMedia.length} Rangmanch records.`;
   [...new Set(books.map(b=>b.category))].sort().forEach(c=>$("#bookCategory").insertAdjacentHTML("beforeend",`<option>${c}</option>`));
   renderBooks();
   try{
@@ -178,6 +213,19 @@ $$('[data-archive-part]').forEach(button=>button.addEventListener("click",()=>{
   $("#archiveDetailsLink").textContent=`Open Part ${part} on Internet Archive ↗`;
   $$('[data-archive-part]').forEach(item=>{const active=item===button;item.classList.toggle("active",active);item.setAttribute("aria-pressed",active)});
 }));
+$$('[data-rangmanch-filter]').forEach(button=>button.addEventListener("click",()=>{
+  $$('[data-rangmanch-filter]').forEach(item=>{const active=item===button;item.classList.toggle("active",active);item.setAttribute("aria-pressed",active)});
+  renderRangmanch(button.dataset.rangmanchFilter);
+}));
+$("#rangmanchGrid").addEventListener("click",event=>{
+  const control=event.target.closest("[data-rangmanch-kind]");
+  if(!control)return;
+  const isPlaylist=control.dataset.rangmanchKind==="playlist";
+  $("#rangmanchPlayer").src=isPlaylist?`https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(control.dataset.rangmanchId)}`:`https://www.youtube-nocookie.com/embed/${encodeURIComponent(control.dataset.rangmanchId)}`;
+  $("#rangmanchPlayer").title=`Rangmanch player: ${control.dataset.rangmanchTitle}`;
+  $("#rangmanchPlayerTitle").textContent=`Now selected: ${control.dataset.rangmanchTitle}`;
+  $("#rangmanchPlayer").scrollIntoView({behavior:"smooth",block:"center"});
+});
 $("#issueSearch").addEventListener("input",()=>renderIssues(true)); $("#publication").addEventListener("change",()=>renderIssues(true)); $("#issueYear").addEventListener("change",()=>renderIssues(true)); $("#moreIssues").addEventListener("click",()=>{issueLimit+=30;renderIssues()});
 $("#globalSearchForm").addEventListener("submit",e=>{e.preventDefault();globalSearch($("#globalSearch").value)}); $("#closeSearch").addEventListener("click",()=>{$("#searchDialog").hidden=true;document.body.style.overflow=""});
 $("#listenBtn").addEventListener("click",()=>listen()); $("#readerListen").addEventListener("click",()=>listen($(".reader-copy p:nth-of-type(2)").textContent));
