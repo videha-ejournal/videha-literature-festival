@@ -122,7 +122,6 @@ let currentBookSource = "all";
 let currentBookView = "shelf";
 
 function renderCovers(){ $("#coverRail").innerHTML = covers.map(([src,title]) => `<article class="cover-card"><img src="assets/${encodeURI(src)}" alt="Book cover: ${title}" loading="lazy"><span>${title}</span></article>`).join(""); }
-function renderStages(){ $("#stageGrid").innerHTML = stages.map(s => `<article class="stage-card"><p class="eyebrow">${escapeHTML(s.kicker)}</p><h3>${escapeHTML(s.title)}</h3><p>${escapeHTML(s.text)}</p><div class="stage-links">${s.links.map(link => link.query ? `<button type="button" data-book-query="${escapeHTML(link.query)}">${escapeHTML(link.label)} ↓</button>` : link.source ? `<button type="button" data-book-source-jump="${escapeHTML(link.source)}">${escapeHTML(link.label)} ↓</button>` : `<a href="${escapeHTML(link.url)}" ${link.url.startsWith("http")?'target="_blank" rel="noopener"':""}>${escapeHTML(link.label)} ↗</a>`).join("")}</div></article>`).join(""); }
 function renderRangmanch(group="all"){
   const records=group==="all"?rangmanchMedia:rangmanchMedia.filter(item=>item.group===group);
   $("#rangmanchCount").textContent=`${records.length} source-linked records shown`;
@@ -175,7 +174,7 @@ function globalSearch(q){
 }
 
 async function init(){
-  renderCovers(); renderStages(); renderRangmanch();
+  renderCovers(); renderRangmanch();
   Object.entries(langs).forEach(([code,name])=>$("#language").insertAdjacentHTML("beforeend",`<option value="${code}">${name}</option>`));
   try{
     const pothi=await fetch("data/pothi.json").then(r=>r.json());
