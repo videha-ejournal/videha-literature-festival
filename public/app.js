@@ -167,9 +167,10 @@ function globalSearch(q){
   const foundIssues=issueRecords.filter(x=>`${x.publication} ${x.issue} ${x.title} ${x.date||""} ${x.year||""}`.toLowerCase().includes(q)).slice(0,60);
   const foundStages=stages.filter(s=>`${s.title} ${s.kicker} ${s.text}`.toLowerCase().includes(q));
   const foundRangmanch=rangmanchMedia.filter(item=>`${item.group} ${item.title}`.toLowerCase().includes(q)).slice(0,30);
-  const all=[...foundBooks.map(x=>({kind:"Book",title:x.title,desc:`${x.category} · ${x.detail}`,url:x.url})),...foundIssues.map(x=>({kind:"Issue",title:x.title,desc:`${x.publication} ${x.issue} · ${x.date||"undated"}`,url:x.source})),...foundStages.map(x=>({kind:"Stage",title:x.title,desc:x.text,url:x.links[0].url||"#stages"})),...foundRangmanch.map(x=>({kind:"Rangmanch",title:x.title,desc:x.group,url:x.url}))];
+  const foundWorld=$$(".world-program-link").filter(link=>`${link.dataset.genre||""} ${link.textContent}`.toLowerCase().includes(q)).slice(0,30).map(link=>({kind:"World programme",title:link.querySelector("b")?.textContent||link.textContent,desc:link.querySelector("span")?.textContent||"Official external programme",url:link.href}));
+  const all=[...foundBooks.map(x=>({kind:"Book",title:x.title,desc:`${x.category} · ${x.detail}`,url:x.url})),...foundIssues.map(x=>({kind:"Issue",title:x.title,desc:`${x.publication} ${x.issue} · ${x.date||"undated"}`,url:x.source})),...foundStages.map(x=>({kind:"Stage",title:x.title,desc:x.text,url:x.links[0].url||"#stages"})),...foundRangmanch.map(x=>({kind:"Rangmanch",title:x.title,desc:x.group,url:x.url})),...foundWorld];
   $("#searchDialogTitle").textContent=`Results for “${q}”`;
-  $("#searchResults").innerHTML=all.length?all.map(x=>`<article class="search-result"><span class="kind">${x.kind}</span><div><h3>${x.title}</h3><p>${x.desc}</p></div><a href="${x.url}" ${x.url.startsWith("http")?'target="_blank" rel="noopener"':""}>Open ↗</a></article>`).join(""):"<p>No matching books, issues or festival stages were found.</p>";
+  $("#searchResults").innerHTML=all.length?all.map(x=>`<article class="search-result"><span class="kind">${x.kind}</span><div><h3>${x.title}</h3><p>${x.desc}</p></div><a href="${x.url}" ${x.url.startsWith("http")?'target="_blank" rel="noopener"':""}>Open ↗</a></article>`).join(""):"<p>No matching books, issues, stages, media or world programmes were found.</p>";
   $("#searchDialog").hidden=false; document.body.style.overflow="hidden"; $("#closeSearch").focus();
 }
 
@@ -188,7 +189,7 @@ async function init(){
   }catch{}
   $("#curatedCount").textContent=books.filter(book=>book.source==="curated").length.toLocaleString("en-IN");
   $("#allBookCount").textContent=books.length.toLocaleString("en-IN");
-  $("#searchStatus").textContent=`Search ${books.length.toLocaleString("en-IN")} book and study records, 485 Videha–Sadeha files, and ${rangmanchMedia.length} Rangmanch records.`;
+  $("#searchStatus").textContent=`Search ${books.length.toLocaleString("en-IN")} book and study records, 485 Videha–Sadeha files, ${rangmanchMedia.length} Rangmanch records and $$(".world-program-link").length world programmes.`;
   [...new Set(books.map(b=>b.category))].sort().forEach(c=>$("#bookCategory").insertAdjacentHTML("beforeend",`<option>${c}</option>`));
   renderBooks();
   try{
