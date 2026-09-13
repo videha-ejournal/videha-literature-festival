@@ -40,7 +40,11 @@ for(const file of htmlFiles){
   const buttons=[...html.matchAll(/<button\b[^>]*>([\s\S]*?)<\/button>/gi)];
   check('button-name',buttons.every(m=>/\baria-label=["'][^"']+["']/i.test(m[0])||m[1].replace(/<[^>]+>/g,'').trim().length>0),'Buttons must have accessible names.');
   const inputs=[...html.matchAll(/<(input|select|textarea)\b[^>]*>/gi)].map(m=>m[0]);
-  check('form-name',inputs.every(tag=>/\baria-label=["'][^"']+["']/i.test(tag)||/\baria-labelledby=["'][^"']+["']/i.test(tag)||(/\bid=["']([^"']+)["']/i.test(tag)&&new RegExp(`<label[^>]*for=["']${tag.match(/\bid=["']([^"']+)["']/i)?.[1]}["']`,'i').test(html))),'Form controls must have labels or accessible names.');
+  check('form-name',inputs.every(tag=>{
+    if(/\baria-label=["'][^"']+["']/i.test(tag)||/\baria-labelledby=["'][^"']+["']/i.test(tag)) return true;
+    const id=tag.match(/\bid=["']([^"']+)["']/i)?.[1];
+    return Boolean(id && new RegExp(`<label[^>]*for=["']${id.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}["']`,'i').test(html));
+  }),'Form controls must have labels or accessible names.');
   const headings=[...html.matchAll(/<h([1-6])\b/gi)].map(m=>Number(m[1]));
   let skip=false;for(let i=1;i<headings.length;i++)if(headings[i]-headings[i-1]>1)skip=true;
   check('heading-order',!skip,'Heading levels must not skip downward by more than one level.','warning');
@@ -49,7 +53,9 @@ for(const file of htmlFiles){
 }
 
 const errors=issues.filter(x=>x.level==='error');
-const report={generated:new Date().toISOString(),standard:'WCAG 2.2 AA automated structural gate',scope:{htmlFiles:htmlFiles.length},summary:{errors:errors.length,warnings:issues.length-errors.length,passed:results.reduce((n,r)=>n+r.checks.filter(c=>c.ok).length,checks:results.reduce((n,r)=>n+r.checks.length,0)},limitations:['Automated structural checks cannot certify screen-reader behaviour, colour contrast in all rendered states, cognitive accessibility, caption accuracy, transcript accuracy, or semantic quality of legacy external PDFs.','Manual assistive-technology testing remains part of the published conformance process.'],issues,results};
+const passed=results.reduce((n,r)=>n+r.checks.filter(c=>c.ok).length,0);
+const totalChecks=results.reduce((n,r)=>n+r.checks.length,0);
+const report={generated:new Date().toISOString(),standard:'WCAG 2.2 AA automated structural gate',scope:{htmlFiles:htmlFiles.length},summary:{errors:errors.length,warnings:issues.length-errors.length,passed,checks:totalChecks},limitations:['Automated structural checks cannot certify screen-reader behaviour, colour contrast in all rendered states, cognitive accessibility, caption accuracy, transcript accuracy, or semantic quality of legacy external PDFs.','Manual assistive-technology testing remains part of the published conformance process.'],issues,results};
 await writeFile(reportPath,JSON.stringify(report,null,2));
 console.log(`Accessibility audit: ${report.summary.checks} checks across ${htmlFiles.length} HTML files; ${errors.length} errors; ${report.summary.warnings} warnings.`);
 if(errors.length){

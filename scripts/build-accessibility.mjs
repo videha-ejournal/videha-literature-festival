@@ -1,0 +1,120 @@
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+
+const root = path.resolve(import.meta.dirname, "..");
+const dist = path.join(root, "dist");
+const publicDir = path.join(root, "public");
+const base = "https://videha-ejournal.github.io/videha-literature-festival/";
+const buildVersion = process.env.GITHUB_SHA?.slice(0, 12) || "20260913a11y";
+
+const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[ch]);
+const slugify = value => String(value).normalize("NFKD").replace(/[^\w\u0900-\u097F]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase() || "item";
+const pad = value => String(Number(value)).padStart(3, "0");
+const ensureDir = dir => mkdir(dir, { recursive: true });
+const readMaybe = async file => { try { return await readFile(file, "utf8"); } catch { return ""; } };
+
+function shell({ title, description, body, lang = "en", canonical, extraHead = "" }) {
+  return `<!doctype html>\n<html lang="${escapeHtml(lang)}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="${escapeHtml(description)}"><title>${escapeHtml(title)}</title><link rel="canonical" href="${escapeHtml(canonical)}"><link rel="stylesheet" href="${base}styles.css?v=${buildVersion}"><link rel="stylesheet" href="${base}enhancements.css?v=${buildVersion}"><link rel="stylesheet" href="${base}accessibility-completion.css?v=${buildVersion}">${extraHead}<style>body{background:#faf6ee;color:#23201b}main{max-width:1100px;margin:auto;padding:42px 22px 90px}a{overflow-wrap:anywhere}.crumbs{display:flex;flex-wrap:wrap;gap:.45rem;margin:0 0 1.5rem;font-size:.9rem}.crumbs a{font-weight:700}.lede{max-width:78ch;font-size:1.08rem;line-height:1.75}.meta-list{display:grid;grid-template-columns:minmax(150px,220px) 1fr;gap:.5rem 1rem;max-width:850px}.meta-list dt{font-weight:700}.meta-list dd{margin:0}.back{display:inline-block;margin-top:2rem;font-weight:700}@media(max-width:620px){.meta-list{grid-template-columns:1fr}.meta-list dd{margin:0 0 .5rem}}</style></head><body><main id="main">${body}</main></body></html>`;
+}
+
+const archive = JSON.parse(await readFile(path.join(dist, "data", "archive.json"), "utf8"));
+const records = archive.archive || [];
+const videhaCount = records.filter(r => r.publication === "VIDEHA").length;
+const sadehaIssueCount = new Set(records.filter(r => r.publication === "SADEHA").map(r => r.issue)).size;
+const sadehaFileCount = records.filter(r => r.publication === "SADEHA").length;
+
+const accessibleArchiveDir = path.join(dist, "accessible-archive");
+const accessibilityDir = path.join(dist, "accessibility");
+const mediaDir = path.join(accessibilityDir, "media");
+const transcriptsDir = path.join(accessibilityDir, "transcripts");
+await Promise.all([ensureDir(accessibleArchiveDir), ensureDir(accessibilityDir), ensureDir(mediaDir), ensureDir(transcriptsDir)]);
+
+const remediation = [];
+for (const record of records) {
+  const publication = String(record.publication || "publication").toLowerCase();
+  const versionSuffix = record.version ? `-v${record.version}` : "";
+  const slug = `${publication}-${pad(record.issue)}${versionSuffix}`;
+  const url = `${base}accessible-archive/${slug}/`;
+  const title = record.title || `${record.publication} — ${record.issue}`;
+  const status = {
+    slug, publication: record.publication, issue: record.issue, version: record.version || null, title,
+    date: record.date || "", dateISO: record.dateISO || "", sourcePdf: record.source, accessibleRecord: url,
+    sourceFormat: "PDF", pdfTaggingVerified: false, verifiedFullTextHtml: false,
+    remediationStatus: "legacy-source-pdf-tagging-not-verified",
+    alternativeStatus: "accessible-metadata-and-navigation-record-available",
+    note: "The original historical PDF is preserved unchanged. This first-party HTML record supplies accessible metadata and navigation but is not represented as a verbatim full-text transcript."
+  };
+  remediation.push(status);
+  const body = `<nav class="crumbs" aria-label="Breadcrumb"><a href="${base}">Festival</a><span aria-hidden="true">›</span><a href="${base}issues/">Issues</a><span aria-hidden="true">›</span><a href="${base}accessible-archive/">Accessible archive</a><span aria-hidden="true">›</span><span aria-current="page">${escapeHtml(title)}</span></nav>\n<p class="eyebrow">ACCESSIBLE ARCHIVE RECORD</p><h1>${escapeHtml(title)}</h1><p class="lede">This keyboard- and screen-reader-friendly page is the first-party accessibility record for the preserved issue. It does <strong>not</strong> claim that the legacy PDF is tagged or that a verified full-text transcription exists when neither has been verified.</p>\n<div class="a11y-status-card"><h2>Accessibility status</h2><p><span class="a11y-status pending">PDF tagging not verified</span></p><p>The historic source PDF remains preserved unchanged. A fully tagged PDF requires document-structure remediation and assistive-technology verification; this record prevents an unverified legacy PDF from being presented as conformant.</p></div>\n<dl class="meta-list"><dt>Publication</dt><dd>${escapeHtml(record.publication)}</dd><dt>Issue</dt><dd>${escapeHtml(record.issue)}${record.version ? ` · Version ${escapeHtml(record.version)}` : ""}</dd>${record.date ? `<dt>Date</dt><dd><time${record.dateISO ? ` datetime="${escapeHtml(record.dateISO)}"` : ""}>${escapeHtml(record.date)}</time></dd>` : ""}<dt>Source format</dt><dd>PDF</dd><dt>Verified tagged PDF</dt><dd>No verification recorded</dd><dt>Verified full-text HTML</dt><dd>Not available in this repository record</dd></dl>\n<p><a href="${escapeHtml(record.source)}">Open preserved source PDF</a></p><p><a href="${base}accessibility/pdf-remediation/">Read the PDF remediation policy and status method</a></p><p class="back"><a href="${base}issues/">← Return to Issues</a></p>`;
+  const dir = path.join(accessibleArchiveDir, slug); await ensureDir(dir);
+  await writeFile(path.join(dir, "index.html"), shell({title:`${title} · accessible archive record`,description:`Accessible metadata and remediation status for ${title}.`,canonical:url,body}));
+}
+await writeFile(path.join(accessibilityDir, "archive-remediation.json"), JSON.stringify({generated:new Date().toISOString(),summary:{videhaFiles:videhaCount,sadehaIssues:sadehaIssueCount,sadehaFiles:sadehaFileCount,total:records.length,taggedPdfVerified:0,accessibleRecords:records.length},policy:"Legacy source PDFs are preserved unchanged. Tagged-PDF or full-text status is marked verified only after evidence exists; metadata-only pages are never described as full text.",records:remediation}, null, 2));
+
+const archiveRows = remediation.map(r => `<tr><td>${escapeHtml(r.publication)}</td><td>${escapeHtml(r.issue)}${r.version?` v${escapeHtml(r.version)}`:""}</td><td>${r.date?escapeHtml(r.date):"—"}</td><td><span class="a11y-status pending">Tagging unverified</span></td><td><a href="${base}accessible-archive/${escapeHtml(r.slug)}/">Accessible record</a></td><td><a href="${escapeHtml(r.sourcePdf)}">PDF source</a></td></tr>`).join("");
+await writeFile(path.join(accessibleArchiveDir, "index.html"), shell({title:"Accessible archive records · Videha Literature Festival",description:"Accessible metadata and remediation status for every preserved Videha and Sadeha archive PDF.",canonical:`${base}accessible-archive/`,body:`<nav class="crumbs" aria-label="Breadcrumb"><a href="${base}">Festival</a><span aria-hidden="true">›</span><span aria-current="page">Accessible archive</span></nav><p class="eyebrow">ARCHIVE ACCESSIBILITY</p><h1>Accessible records for all ${records.length} preserved files</h1><p class="lede">The archive contains ${videhaCount} Videha PDF files and ${sadehaFileCount} Sadeha files representing ${sadehaIssueCount} numbered Sadeha issues. Every preserved file now has a first-party HTML accessibility record. These pages expose metadata, status and source navigation without falsely representing unverified PDF tagging as WCAG-conformant full text.</p><div class="a11y-callout"><strong>Important:</strong> “Accessible record” means accessible navigation and metadata. It does not mean the underlying historical PDF has been tagged or that an editorially verified transcription has been completed.</div><table class="a11y-table"><caption>Archive remediation register</caption><thead><tr><th>Publication</th><th>Issue</th><th>Date</th><th>PDF status</th><th>HTML record</th><th>Source</th></tr></thead><tbody>${archiveRows}</tbody></table><p><a href="${base}accessibility/archive-remediation.json">Machine-readable remediation register (JSON)</a></p><p class="back"><a href="${base}accessibility/">← Accessibility statement</a></p>`}));
+
+const appJs = await readFile(path.join(dist, "app.js"), "utf8");
+const indexHtml = await readFile(path.join(dist, "index.html"), "utf8");
+const mediaMap = new Map();
+const addMedia = item => { if (!item.url || !/^https?:/.test(item.url)) return; const key=item.url.replace(/[#?].*$/,''); if(!mediaMap.has(key)) mediaMap.set(key,item); };
+for (const m of appJs.matchAll(/\{group:"([^"]+)",title:"([^"]+)",kind:"([^"]+)",(?:id:"([^"]+)"|url:"([^"]+)")/g)) {
+  const [,group,title,kind,id,url] = m; let source=url||"";
+  if(id && kind==="playlist") source=`https://www.youtube.com/playlist?list=${encodeURIComponent(id)}`;
+  else if(id) source=`https://www.youtube.com/watch?v=${encodeURIComponent(id)}`;
+  addMedia({group,title,kind,url:source,host:source.includes("youtube.com")?"YouTube":"External source"});
+}
+for (const m of indexHtml.matchAll(/<a[^>]+href="(https?:\/\/[^"]*(?:youtube\.com|archive\.org)[^"]*)"[^>]*>([\s\S]*?)<\/a>/gi)) {
+  const url=m[1].replace(/&amp;/g,"&"); const text=m[2].replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim();
+  addMedia({group:"Videha media",title:text||"Videha media source",kind:"link",url,host:url.includes("youtube.com")?"YouTube":"Internet Archive"});
+}
+const media = [...mediaMap.values()].map((item,i)=>({id:`media-${String(i+1).padStart(3,"0")}`,...item,captionsRequestedInFestival:item.url.includes("youtube.com"),captionAvailability:"host-controlled-not-editorially-verified",transcriptStatus:"verified-transcript-not-stored-in-this-repository",programNoteAlternative:item.title||"Programme title available"}));
+await writeFile(path.join(accessibilityDir,"media-accessibility.json"),JSON.stringify({generated:new Date().toISOString(),policy:"Captions are requested for embedded YouTube players; availability and accuracy remain with the host. Videha only labels a transcript verified when the transcript text is stored and reviewed.",items:media},null,2));
+
+const transcriptSourceDir=path.join(publicDir,"transcripts");
+const verifiedTranscripts=[];
+try{
+  for(const name of await readdir(transcriptSourceDir)){
+    if(!name.endsWith('.txt')) continue;
+    const text=(await readFile(path.join(transcriptSourceDir,name),'utf8')).trim(); if(!text) continue;
+    const lines=text.split(/\r?\n/); const title=(lines[0]?.replace(/^Title:\s*/i,'').trim())||name.replace(/\.txt$/,'');
+    const slug=slugify(name.replace(/\.txt$/,'')); const dir=path.join(transcriptsDir,slug); await ensureDir(dir);
+    const body=`<nav class="crumbs" aria-label="Breadcrumb"><a href="${base}">Festival</a><span aria-hidden="true">›</span><a href="${base}accessibility/">Accessibility</a><span aria-hidden="true">›</span><a href="${base}accessibility/transcripts/">Transcripts</a><span aria-hidden="true">›</span><span aria-current="page">${escapeHtml(title)}</span></nav><p class="eyebrow">VERIFIED TRANSCRIPT</p><h1>${escapeHtml(title)}</h1><p><span class="a11y-status verified">Transcript stored</span></p><div class="transcript-text">${escapeHtml(text)}</div><p class="back"><a href="${base}accessibility/transcripts/">← Transcript index</a></p>`;
+    await writeFile(path.join(dir,'index.html'),shell({title:`${title} · transcript`,description:`Verified transcript: ${title}`,canonical:`${base}accessibility/transcripts/${slug}/`,body})); verifiedTranscripts.push({slug,title,sourceFile:name});
+  }
+}catch{}
+await writeFile(path.join(accessibilityDir,'transcript-register.json'),JSON.stringify({generated:new Date().toISOString(),verifiedCount:verifiedTranscripts.length,policy:"Only non-empty editorially supplied transcript text files are published as verified transcripts. Host auto-captions are not silently converted into Videha-verified transcripts.",transcripts:verifiedTranscripts},null,2));
+
+const mediaRows=media.map(item=>`<tr><td>${escapeHtml(item.group)}</td><td>${escapeHtml(item.title)}</td><td>${escapeHtml(item.host)}</td><td>${item.captionsRequestedInFestival?'<span class="a11y-status external">CC requested</span>':'Host dependent'}</td><td><span class="a11y-status pending">Transcript unverified</span></td><td><a href="${escapeHtml(item.url)}">Open source</a></td></tr>`).join('');
+await writeFile(path.join(mediaDir,'index.html'),shell({title:'Media accessibility register · Videha Literature Festival',description:'Caption, transcript and source-accessibility status for Videha Literature Festival media links.',canonical:`${base}accessibility/media/`,body:`<nav class="crumbs" aria-label="Breadcrumb"><a href="${base}">Festival</a><span aria-hidden="true">›</span><a href="${base}accessibility/">Accessibility</a><span aria-hidden="true">›</span><span aria-current="page">Media register</span></nav><p class="eyebrow">MEDIA ACCESSIBILITY</p><h1>Caption and transcript register</h1><p class="lede">Embedded YouTube players now request captions by default. Caption/subtitle availability, language and accuracy remain controlled by the original host. Videha does not call host-generated text a verified transcript unless a reviewed transcript is stored in the repository.</p><div class="a11y-callout"><strong>Transcript integrity:</strong> ${verifiedTranscripts.length} verified repository transcript${verifiedTranscripts.length===1?' is':'s are'} currently available. Where no verified transcript exists, the register says so explicitly and links to the original host for its caption/transcript controls.</div><table class="a11y-table"><caption>Media accessibility status</caption><thead><tr><th>Group</th><th>Programme</th><th>Host</th><th>Captions</th><th>Transcript</th><th>Source</th></tr></thead><tbody>${mediaRows||'<tr><td colspan="6">No media records were parsed.</td></tr>'}</tbody></table><p><a href="${base}accessibility/media-accessibility.json">Machine-readable media register (JSON)</a></p>`}));
+await writeFile(path.join(transcriptsDir,'index.html'),shell({title:'Verified transcript index · Videha Literature Festival',description:'Index of editorially verified media transcripts available from the Videha Literature Festival.',canonical:`${base}accessibility/transcripts/`,body:`<nav class="crumbs" aria-label="Breadcrumb"><a href="${base}">Festival</a><span aria-hidden="true">›</span><a href="${base}accessibility/">Accessibility</a><span aria-hidden="true">›</span><span aria-current="page">Transcripts</span></nav><p class="eyebrow">VERIFIED TRANSCRIPTS</p><h1>Transcript index</h1><p class="lede">This index deliberately distinguishes verified transcript text from host captions and from descriptive programme notes.</p>${verifiedTranscripts.length?`<ul>${verifiedTranscripts.map(t=>`<li><a href="${base}accessibility/transcripts/${escapeHtml(t.slug)}/">${escapeHtml(t.title)}</a></li>`).join('')}</ul>`:'<div class="a11y-callout"><strong>No editorially verified transcript text files are currently stored in this repository.</strong> Captions may still be available on the original YouTube or Internet Archive source. The media register links to those sources.</div>'}<p><a href="${base}accessibility/media/">Open media accessibility register</a></p>`}));
+
+const pdfRemediationDir=path.join(accessibilityDir,'pdf-remediation'); await ensureDir(pdfRemediationDir);
+await writeFile(path.join(pdfRemediationDir,'index.html'),shell({title:'Legacy PDF remediation · Videha Literature Festival',description:'Transparent remediation policy and status for historic Videha and Sadeha PDF files.',canonical:`${base}accessibility/pdf-remediation/`,body:`<nav class="crumbs" aria-label="Breadcrumb"><a href="${base}">Festival</a><span aria-hidden="true">›</span><a href="${base}accessibility/">Accessibility</a><span aria-hidden="true">›</span><span aria-current="page">PDF remediation</span></nav><p class="eyebrow">LEGACY PDF ACCESSIBILITY</p><h1>PDF remediation policy and status</h1><p class="lede">The festival preserves historic PDFs as source artefacts. Automated conversion alone cannot honestly certify a complex literary PDF as WCAG 2.2 AA or PDF/UA conformant. Tagged reading order, headings, lists, table structure, language, alt text and assistive-technology behaviour require verification.</p><div class="a11y-grid"><section class="a11y-status-card"><h2>What is implemented</h2><ul class="a11y-checklist"><li>Every one of the ${records.length} preserved archive files has a first-party accessible HTML metadata/navigation record.</li><li>A machine-readable remediation register identifies tagging and full-text status explicitly.</li><li>Legacy PDFs are never labelled accessible merely because they contain selectable text.</li><li>The accessible archive index exposes both the HTML record and preserved source.</li></ul></section><section class="a11y-status-card"><h2>What “verified tagged PDF” means</h2><p>The register changes to verified only after semantic tagging and manual checks of reading order, document language, headings, links, tables/images where present, zoom/reflow behaviour where applicable, and assistive-technology reading.</p></section></div><p><a href="${base}accessible-archive/">Browse all archive accessibility records</a> · <a href="${base}accessibility/archive-remediation.json">Download remediation register JSON</a></p>`}));
+
+const manualDir=path.join(accessibilityDir,'manual-audit'); await ensureDir(manualDir);
+await writeFile(path.join(manualDir,'index.html'),shell({title:'WCAG 2.2 AA manual audit protocol · Videha Literature Festival',description:'Repeatable manual assistive-technology and WCAG 2.2 AA verification protocol for Videha Literature Festival.',canonical:`${base}accessibility/manual-audit/`,body:`<nav class="crumbs" aria-label="Breadcrumb"><a href="${base}">Festival</a><span aria-hidden="true">›</span><a href="${base}accessibility/">Accessibility</a><span aria-hidden="true">›</span><span aria-current="page">Manual audit</span></nav><p class="eyebrow">WCAG 2.2 AA · MANUAL VERIFICATION</p><h1>Manual accessibility audit protocol</h1><p class="lede">The build now enforces structural checks automatically. This protocol covers the human tests that automation cannot certify.</p><table class="a11y-table"><caption>Required human verification matrix</caption><thead><tr><th>Area</th><th>Procedure</th><th>Acceptance criterion</th><th>Status</th></tr></thead><tbody><tr><td>Keyboard</td><td>Tab/Shift+Tab through header, search, filters, players, dialogs and footer; test Enter/Space/Escape.</td><td>Logical focus order; no trap except managed modal; visible focus; focus returns to trigger.</td><td><span class="a11y-status pending">Human test required</span></td></tr><tr><td>Screen reader</td><td>NVDA + Firefox/Chrome; VoiceOver + Safari where available.</td><td>Landmarks, headings, names, states, results and dynamic updates are announced meaningfully.</td><td><span class="a11y-status pending">Human test required</span></td></tr><tr><td>Zoom & reflow</td><td>Test 200% and 400% zoom and narrow viewport.</td><td>No loss of content/function; no two-dimensional scrolling except intrinsically wide data such as tables.</td><td><span class="a11y-status pending">Human test required</span></td></tr><tr><td>Contrast</td><td>Measure normal, hover, focus, active, high-contrast and disabled states.</td><td>WCAG AA contrast thresholds met.</td><td><span class="a11y-status pending">Human measurement required</span></td></tr><tr><td>Target size</td><td>Inspect interactive controls at responsive breakpoints.</td><td>WCAG 2.2 target-size requirement or valid exception.</td><td><span class="a11y-status external">CSS floor implemented</span></td></tr><tr><td>Media</td><td>Check each programme source for captions and transcript availability/accuracy.</td><td>No item described as captioned/transcribed without verification; source controls reachable.</td><td><span class="a11y-status pending">Per-item review required</span></td></tr><tr><td>Legacy PDF</td><td>Check tags, reading order, language, headings, links, images/tables and AT reading.</td><td>Only verified documents receive a tagged-PDF verified status.</td><td><span class="a11y-status pending">Per-file review required</span></td></tr></tbody></table><p><a href="${base}accessibility/automated-audit.json">Automated build audit JSON</a></p>`}));
+
+let home=await readFile(path.join(dist,'index.html'),'utf8');
+if(!home.includes('accessibility-completion.css')) home=home.replace('</head>',`<link rel="stylesheet" href="accessibility-completion.css?v=${buildVersion}"></head>`);
+if(!home.includes('accessibility-media.js')) home=home.replace('</body>',`<script src="accessibility-media.js?v=${buildVersion}" defer></script></body>`);
+home=home.replace(/(<section id="reader"[^>]*>)/,`$1<div class="archive-access-note"><strong>Accessibility registers:</strong> <a href="accessible-archive/">Archive/PDF remediation</a> · <a href="accessibility/media/">Media captions & transcripts</a> · <a href="accessibility/manual-audit/">WCAG 2.2 AA manual audit protocol</a></div>`);
+await writeFile(path.join(dist,'index.html'),home);
+
+const a11yPage=path.join(accessibilityDir,'index.html');
+let a11y=await readMaybe(a11yPage);
+if(a11y){
+  if(!a11y.includes('accessibility-completion.css')) a11y=a11y.replace('</head>',`<link rel="stylesheet" href="${base}accessibility-completion.css?v=${buildVersion}"></head>`);
+  a11y=a11y.replace('</main>',`<section class="a11y-status-card"><h2>Published verification registers</h2><p><a href="${base}accessibility/manual-audit/">WCAG 2.2 AA manual audit protocol</a> · <a href="${base}accessibility/automated-audit.json">Automated build audit</a> · <a href="${base}accessible-archive/">Legacy PDF accessibility records</a> · <a href="${base}accessibility/media/">Media caption/transcript register</a> · <a href="${base}accessibility/transcripts/">Verified transcript index</a></p><p>Conformance is stated conservatively: automated checks are build-gated; human assistive-technology checks and legacy-content remediation remain explicitly statused until verified.</p></section></main>`);
+  await writeFile(a11yPage,a11y);
+}
+
+const sitemapPath=path.join(dist,'sitemap.xml'); let sitemap=await readMaybe(sitemapPath);
+if(sitemap){
+  const urls=[`${base}accessible-archive/`,`${base}accessibility/media/`,`${base}accessibility/transcripts/`,`${base}accessibility/pdf-remediation/`,`${base}accessibility/manual-audit/`,...remediation.map(r=>r.accessibleRecord),...verifiedTranscripts.map(t=>`${base}accessibility/transcripts/${t.slug}/`)];
+  const additions=urls.filter(u=>!sitemap.includes(`<loc>${u}</loc>`)).map(u=>`  <url><loc>${u}</loc><lastmod>${new Date().toISOString().slice(0,10)}</lastmod></url>`).join('\n');
+  sitemap=sitemap.replace('</urlset>',`${additions?'\n'+additions+'\n':''}</urlset>`); await writeFile(sitemapPath,sitemap);
+}
+
+await writeFile(path.join(accessibilityDir,'accessibility-build-summary.json'),JSON.stringify({generated:new Date().toISOString(),archive:{records:records.length,videhaFiles:videhaCount,sadehaIssues:sadehaIssueCount,sadehaFiles:sadehaFileCount},media:{records:media.length,verifiedTranscripts:verifiedTranscripts.length},buildVersion,principle:"Do not claim accessibility, captions, transcripts or PDF tagging unless verified."},null,2));
+console.log(`Accessibility layer built: ${records.length} archive records, ${media.length} media records, ${verifiedTranscripts.length} verified transcripts.`);
