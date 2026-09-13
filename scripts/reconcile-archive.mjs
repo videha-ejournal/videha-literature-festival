@@ -37,4 +37,15 @@ archive.reconciliation = {
 };
 
 await writeFile(archivePath, JSON.stringify(archive));
+
+// Keep the client-side search summary synchronized with the authoritative archive count.
+const appPath = path.join(root, "dist", "app.js");
+try {
+  let app = await readFile(appPath, "utf8");
+  app = app.replace(/\b485 Videha–Sadeha files\b/g, `${archive.preservedArchiveFiles} Videha–Sadeha files`);
+  await writeFile(appPath, app);
+} catch (error) {
+  if (error?.code !== "ENOENT") throw error;
+}
+
 console.log(`Reconciled archive: ${archive.archiveMaxVideha} Videha issues + ${archive.archiveSadehaDocuments} Sadeha files = ${archive.archive.length} preserved PDFs.`);
