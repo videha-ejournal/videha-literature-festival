@@ -26,11 +26,40 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends ffmpeg
           python -m pip install --disable-pip-version-check 'faster-whisper>=1.1,<2'
-      - name: Transcribe one real Internet Archive recording
+      - name: Select the smallest real canonical recording for smoke testing
         run: |
           mkdir -p asr-smoke
+          python - <<'PY'
+          import json
+          src='public/data/criticism-transcript-inventory.json'
+          dst='asr-smoke/inventory.json'
+          data=json.load(open(src,encoding='utf-8'))
+          choices=[]
+          for collection in data.get('collections',[]):
+              for item in collection.get('canonicalMedia',[]):
+                  size=int(item.get('selectedBytes') or 0)
+                  if size > 0:
+                      choices.append((size, collection, item))
+          assert choices, 'No canonical recording available for smoke test'
+          size, collection, item=min(choices,key=lambda row: row[0])
+          smoke={
+              'schemaVersion': data.get('schemaVersion'),
+              'generated': data.get('generated'),
+              'summary': {'canonicalRecordings': 1},
+              'collections': [{
+                  'part': collection['part'],
+                  'identifier': collection['identifier'],
+                  'title': collection.get('title',''),
+                  'canonicalMedia': [item]
+              }]
+          }
+          json.dump(smoke,open(dst,'w',encoding='utf-8'),ensure_ascii=False,indent=2)
+          print({'part':collection['part'],'name':item['selectedName'],'bytes':size})
+          PY
+      - name: Transcribe one real Internet Archive recording
+        run: |
           python scripts/transcribe_criticism_media.py \
-            --inventory public/data/criticism-transcript-inventory.json \
+            --inventory asr-smoke/inventory.json \
             --shard-index 0 \
             --shard-count 1 \
             --limit 1 \
@@ -58,6 +87,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: criticism-asr-smoke
-          path: asr-smoke/asr-shard-000.json
+          path: |
+            asr-smoke/inventory.json
+            asr-smoke/asr-shard-000.json
           if-no-files-found: warn
           retention-days: 7
