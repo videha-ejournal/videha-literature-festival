@@ -1,2 +1,16 @@
-<?xml version='1.0' encoding='utf-8'?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://videha-ejournal.github.io/videha-literature-festival/</loc><lastmod>2026-09-06</lastmod><changefreq>weekly</changefreq><priority>1.00</priority></url><url><loc>https://videha-ejournal.github.io/videha-literature-festival/catalogue.html</loc><lastmod>2026-09-06</lastmod><changefreq>weekly</changefreq><priority>0.95</priority></url></urlset>
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://videha-ejournal.github.io/videha-literature-festival/</loc>
+    <lastmod>2026-09-13</lastmod><changefreq>weekly</changefreq><priority>1.00</priority>
+    <xhtml:link rel="alternate" hreflang="mai" href="https://videha-ejournal.github.io/videha-literature-festival/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://videha-ejournal.github.io/videha-literature-festival/en/"/>
+  </url>
+  <url>
+    <loc>https://videha-ejournal.github.io/videha-literature-festival/en/</loc>
+    <lastmod>2026-09-13</lastmod><changefreq>weekly</changefreq><priority>0.98</priority>
+    <xhtml:link rel="alternate" hreflang="mai" href="https://videha-ejournal.github.io/videha-literature-festival/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://videha-ejournal.github.io/videha-literature-festival/en/"/>
+  </url>
+  <url><loc>https://videha-ejournal.github.io/videha-literature-festival/catalogue.html</loc><lastmod>2026-09-13</lastmod><changefreq>weekly</changefreq><priority>0.95</priority></url>
+</urlset>
