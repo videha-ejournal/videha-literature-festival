@@ -34,10 +34,11 @@ jobs:
           assert s['collectionsRead'] == 12, s
           assert s['failures'] == 0, s
           assert s['mediaFiles'] > 0, s
+          assert s['canonicalRecordings'] > 0, s
           PY
       - name: Commit refreshed inventory
         run: |
-          if git diff --quiet -- public/data/criticism-transcript-inventory.json; then
+          if [ -z "$(git status --porcelain -- public/data/criticism-transcript-inventory.json)" ]; then
             echo 'Inventory unchanged.'
             exit 0
           fi
@@ -45,4 +46,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add public/data/criticism-transcript-inventory.json
           git commit -m 'Refresh criticism transcript source inventory [skip ci]'
+          git pull --rebase origin main
           git push
