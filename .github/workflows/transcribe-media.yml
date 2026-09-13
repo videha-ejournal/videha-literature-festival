@@ -1,0 +1,173 @@
+name: Build Videha media transcript drafts
+
+on:
+  push:
+    branches: [main, transcript-editorial-completion-2026-09-13]
+    paths:
+      - public/app.js
+      - scripts/transcribe_media.py
+      - scripts/merge_transcript_manifests.py
+      - .github/workflows/transcribe-media.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  TRANSCRIPT_RELEASE: media-transcripts-v1
+  WHISPER_MODEL: small
+
+jobs:
+  smoke:
+    if: github.ref_name != 'main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Install transcription dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          python -m pip install --disable-pip-version-check yt-dlp faster-whisper
+      - name: Build one-video smoke inventory
+        run: |
+          cat > smoke-inventory.json <<'JSON'
+          {"items":[{"sourceId":"youtube-4jhaQ3Nw38I","provider":"youtube","url":"https://www.youtube.com/watch?v=4jhaQ3Nw38I","title":"ममता गाबय गीत","videoId":"4jhaQ3Nw38I"}]}
+          JSON
+      - id: smoke
+        continue-on-error: true
+        name: Harvest caption or transcribe one real recording
+        run: python scripts/transcribe_media.py transcribe --inventory smoke-inventory.json --out smoke --limit 1 --model "$WHISPER_MODEL"
+      - name: Upload smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: transcript-smoke-evidence
+          path: smoke/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Enforce smoke success
+        if: steps.smoke.outcome == 'failure'
+        run: exit 1
+
+  discover:
+    if: github.ref_name == 'main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    outputs:
+      source_count: ${{ steps.count.outputs.source_count }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --disable-pip-version-check yt-dlp
+      - name: Discover named YouTube and 12 Internet Archive programme collections
+        run: python scripts/transcribe_media.py discover --app public/app.js --out media-source-inventory.json
+      - id: count
+        run: echo "source_count=$(jq -r '.sourceCount' media-source-inventory.json)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media-source-inventory
+          path: media-source-inventory.json
+          retention-days: 7
+      - name: Create or retain transcript release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if gh release view "$TRANSCRIPT_RELEASE" --repo "$GH_REPO" >/dev/null 2>&1; then
+            gh release edit "$TRANSCRIPT_RELEASE" --repo "$GH_REPO" --title "Videha machine/host transcript drafts" --notes "Accessibility transcript corpus. Provenance is recorded per item. Publisher captions are preferred; host auto-captions are identified as such; Whisper ASR is used only when no caption track is available. Assets are drafts until an explicit Videha human-review record marks them verified."
+          else
+            gh release create "$TRANSCRIPT_RELEASE" --repo "$GH_REPO" --target "$GITHUB_SHA" --title "Videha machine/host transcript drafts" --notes "Accessibility transcript corpus. Provenance is recorded per item. Publisher captions are preferred; host auto-captions are identified as such; Whisper ASR is used only when no caption track is available. Assets are drafts until an explicit Videha human-review record marks them verified."
+          fi
+
+  transcribe:
+    if: github.ref_name == 'main'
+    needs: discover
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - uses: actions/download-artifact@v4
+        with:
+          name: media-source-inventory
+          path: inventory
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Install transcription dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          python -m pip install --disable-pip-version-check yt-dlp faster-whisper
+      - id: transcribe
+        continue-on-error: true
+        run: python scripts/transcribe_media.py transcribe --inventory inventory/media-source-inventory.json --out transcripts --shard-index '${{ matrix.shard }}' --shard-count 64 --model "$WHISPER_MODEL"
+      - name: Publish transcript draft assets
+        if: always() && hashFiles('transcripts/manifest.json') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          for f in transcripts/*.txt transcripts/*.vtt; do
+            [ -f "$f" ] || continue
+            gh release upload "$TRANSCRIPT_RELEASE" "$f" --clobber --repo "$GH_REPO"
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: transcript-manifest-${{ matrix.shard }}
+          path: transcripts/manifest.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Enforce complete shard transcription
+        if: steps.transcribe.outcome == 'failure'
+        run: exit 1
+
+  finalize:
+    if: always() && github.ref_name == 'main'
+    needs: [discover, transcribe]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - uses: actions/download-artifact@v4
+        with:
+          name: media-source-inventory
+          path: inventory
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: transcript-manifest-*
+          path: manifests
+      - id: merge
+        continue-on-error: true
+        run: python scripts/merge_transcript_manifests.py --inventory inventory/media-source-inventory.json --glob 'manifests/**/manifest.json' --out public/data/transcript-machine-manifest.json
+      - name: Publish machine transcript manifest
+        if: always() && hashFiles('public/data/transcript-machine-manifest.json') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release upload "$TRANSCRIPT_RELEASE" public/data/transcript-machine-manifest.json --clobber --repo "$GH_REPO"
+      - name: Commit transcript accessibility ledger
+        if: always() && hashFiles('public/data/transcript-machine-manifest.json') != ''
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/data/transcript-machine-manifest.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Update media transcript accessibility ledger'
+            git push
+          fi
+      - name: Enforce corpus transcription completion
+        if: steps.merge.outcome == 'failure'
+        run: exit 1
