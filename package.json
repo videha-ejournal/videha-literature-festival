@@ -1,13 +1,13 @@
 {
   "name": "videha-literature-festival",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/build.mjs && node scripts/build-enhancements.mjs && node scripts/build-accessibility.mjs && node scripts/fix-accessibility-labels.mjs && node scripts/audit-accessibility.mjs",
+    "build": "node scripts/build.mjs && node scripts/reconcile-archive.mjs && node scripts/build-enhancements.mjs && node scripts/build-accessibility.mjs && node scripts/integrate-accessibility-evidence.mjs && node scripts/fix-accessibility-labels.mjs && node scripts/audit-accessibility.mjs",
     "dev": "node scripts/dev.mjs",
     "update:github": "node scripts/update-github-catalogue.mjs",
     "audit:a11y": "node scripts/audit-accessibility.mjs",
-    "check": "node --check public/app.js && node --check public/enhancements.js && node --check public/accessibility-media.js && node --check scripts/build.mjs && node --check scripts/build-enhancements.mjs && node --check scripts/build-accessibility.mjs && node --check scripts/fix-accessibility-labels.mjs && node --check scripts/audit-accessibility.mjs"
+    "check": "node --check public/app.js && node --check public/enhancements.js && node --check public/accessibility-media.js && node --check scripts/build.mjs && node --check scripts/reconcile-archive.mjs && node --check scripts/build-enhancements.mjs && node --check scripts/build-accessibility.mjs && node --check scripts/integrate-accessibility-evidence.mjs && node --check scripts/fix-accessibility-labels.mjs && node --check scripts/audit-accessibility.mjs"
   }
 }
