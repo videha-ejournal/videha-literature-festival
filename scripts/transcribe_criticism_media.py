@@ -13,6 +13,7 @@ import json
 import os
 import subprocess
 import tempfile
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -42,15 +43,26 @@ def flatten(inventory: dict) -> list[dict]:
     return sorted(rows, key=lambda row: (row["part"], row["logicalSource"].lower()))
 
 
-def extract_audio(url: str, destination: Path) -> tuple[bool, str]:
-    result = run([
-        "ffmpeg", "-hide_banner", "-loglevel", "error", "-nostdin", "-y",
-        "-i", url, "-map", "0:a:0?", "-vn", "-ac", "1", "-ar", "16000",
-        "-c:a", "pcm_s16le", str(destination),
-    ])
-    if result.returncode != 0 or not destination.exists() or destination.stat().st_size < 4096:
-        return False, (result.stderr or "ffmpeg did not produce usable audio")[-4000:]
-    return True, ""
+def extract_audio(url: str, destination: Path, attempts: int = 4) -> tuple[bool, str]:
+    """Extract audio, retrying transient remote 5XX/network failures without reclassifying them."""
+    last_error = "ffmpeg did not produce usable audio"
+    for attempt in range(1, attempts + 1):
+        destination.unlink(missing_ok=True)
+        result = run([
+            "ffmpeg", "-hide_banner", "-loglevel", "error", "-nostdin", "-y",
+            "-rw_timeout", "120000000",
+            "-i", url, "-map", "0:a:0?", "-vn", "-ac", "1", "-ar", "16000",
+            "-c:a", "pcm_s16le", str(destination),
+        ])
+        if result.returncode == 0 and destination.exists() and destination.stat().st_size >= 4096:
+            return True, ""
+        last_error = (result.stderr or last_error)[-4000:]
+        if attempt < attempts:
+            delay = min(15, 2 ** attempt)
+            print(f"  audio fetch/extraction attempt {attempt}/{attempts} failed; retrying in {delay}s", flush=True)
+            time.sleep(delay)
+    destination.unlink(missing_ok=True)
+    return False, last_error
 
 
 def transcribe_one(model, row: dict, wav: Path, model_name: str) -> dict:
