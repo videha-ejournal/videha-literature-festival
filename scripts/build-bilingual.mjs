@@ -80,6 +80,15 @@ function translateStaticHtml(html) {
   return html;
 }
 
+function injectMaithiliRuntime(html) {
+  if (/<script\b[^>]*\bsrc="i18n-mai\.js(?:\?[^\"]*)?"[^>]*><\/script>/i.test(html)) return html;
+  const appScript = /<script\b[^>]*\bsrc="app\.js(?:\?[^\"]*)?"[^>]*><\/script>/i;
+  if (appScript.test(html)) {
+    return html.replace(appScript, (match) => `<script src="i18n-mai.js" type="module"></script>\n  ${match}`);
+  }
+  return html.replace("</body>", '  <script src="i18n-mai.js" type="module"></script>\n</body>');
+}
+
 const englishPathShim = `<script id="vlf-en-path-shim">
 (() => {
   const nativeFetch = window.fetch.bind(window);
@@ -129,7 +138,7 @@ maithili = translateStaticHtml(maithili);
 maithili = maithili.replace(/<button id="listenBtn" type="button"><span lang="mai-Deva">सुनू<\/span> · Listen<\/button>/, '<button id="listenBtn" type="button">सुनू</button>');
 maithili = maithili.replace(/<button id="readerListen"><span lang="mai-Deva">सुनू<\/span> · Listen to this introduction<\/button>/, '<button id="readerListen">ई परिचय सुनू</button>');
 maithili = maithili.replace('<div class="utility">', `<div class="utility">\n      <a class="language-switch" href="en/" hreflang="en" lang="en" aria-label="English version">English</a>`);
-maithili = maithili.replace('<script src="app.js" type="module"></script>', '<script src="i18n-mai.js" type="module"></script>\n  <script src="app.js" type="module"></script>');
+maithili = injectMaithiliRuntime(maithili);
 await writeFile(indexPath, maithili);
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -152,12 +161,12 @@ const assertions = [
   [maithili.includes('<html lang="mai-Deva"'), "Maithili root language"],
   [maithili.includes(`rel="canonical" href="${rootUrl}"`), "Maithili canonical"],
   [maithili.includes('href="en/" hreflang="en"'), "Maithili → English switch"],
-  [maithili.includes('src="i18n-mai.js"'), "Maithili dynamic localisation"],
+  [/<script\b[^>]*\bsrc="i18n-mai\.js(?:\?[^\"]*)?"[^>]*><\/script>/i.test(maithili), "Maithili dynamic localisation"],
   [english.includes('<html lang="en"'), "English language"],
   [english.includes(`rel="canonical" href="${englishUrl}"`), "English canonical"],
   [english.includes('href="../" hreflang="mai"'), "English → Maithili switch"],
-  [english.includes('src="../app.js"'), "English shared application"],
-  [english.includes('href="../styles.css"'), "English shared styles"],
+  [/<script\b[^>]*\bsrc="\.\.\/app\.js(?:\?[^\"]*)?"[^>]*><\/script>/i.test(english), "English shared application"],
+  [/<link\b[^>]*\bhref="\.\.\/styles\.css(?:\?[^\"]*)?"[^>]*>/i.test(english), "English shared styles"],
   [sitemap.includes(`<loc>${englishUrl}</loc>`), "English sitemap entry"],
 ];
 for (const [ok, label] of assertions) if (!ok) throw new Error(`Bilingual build invariant failed: ${label}`);
