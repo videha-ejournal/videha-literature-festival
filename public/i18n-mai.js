@@ -1,8 +1,9 @@
-const translationUrl = new URL("i18n/mai.json", document.baseURI);
-const translations = await fetch(translationUrl).then((response) => {
+const translationUrls = ["i18n/mai.json", "i18n/mai-extra.json"].map((file) => new URL(file, document.baseURI));
+const dictionaries = await Promise.all(translationUrls.map((url) => fetch(url).then((response) => {
   if (!response.ok) throw new Error(`Unable to load Maithili translations: ${response.status}`);
   return response.json();
-});
+})));
+const translations = Object.assign({}, ...dictionaries);
 
 const skipTags = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "CODE", "PRE", "TEXTAREA"]);
 const translateExact = (value) => translations[value] || value;
