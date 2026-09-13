@@ -1,0 +1,63 @@
+name: Build Videha criticism ASR drafts
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/transcribe_criticism_media.py
+      - scripts/merge_criticism_transcripts.py
+      - .github/workflows/transcribe-criticism-media.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install ASR dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          python -m pip install --disable-pip-version-check 'faster-whisper>=1.1,<2'
+      - name: Transcribe one real Internet Archive recording
+        run: |
+          mkdir -p asr-smoke
+          python scripts/transcribe_criticism_media.py \
+            --inventory public/data/criticism-transcript-inventory.json \
+            --shard-index 0 \
+            --shard-count 1 \
+            --limit 1 \
+            --model small \
+            --out asr-smoke/asr-shard-000.json
+      - name: Enforce provenance and review-state boundaries
+        run: |
+          python - <<'PY'
+          import json
+          p='asr-smoke/asr-shard-000.json'
+          d=json.load(open(p,encoding='utf-8'))
+          assert d['selectedCount'] == 1, d
+          assert d['draftCount'] == 1, d
+          assert d['failureCount'] == 0, d
+          r=d['records'][0]
+          assert r['status'] == 'asr-draft', r
+          assert r['humanVerified'] is False, r
+          assert r['editorialReview'] == 'not-reviewed', r
+          assert r.get('plainText','').strip(), r
+          assert r.get('segments'), r
+          print({k:r.get(k) for k in ('id','part','status','detectedLanguage','languageProbability','durationSeconds')})
+          PY
+      - name: Upload smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: criticism-asr-smoke
+          path: asr-smoke/asr-shard-000.json
+          if-no-files-found: warn
+          retention-days: 7
