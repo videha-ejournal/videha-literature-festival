@@ -10,7 +10,12 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+
+env:
+  ASR_RELEASE: criticism-transcripts-v1
+  ASR_MODEL: small
+  SHARD_COUNT: '96'
 
 jobs:
   smoke:
@@ -63,14 +68,13 @@ jobs:
             --shard-index 0 \
             --shard-count 1 \
             --limit 1 \
-            --model small \
+            --model "$ASR_MODEL" \
             --out asr-smoke/asr-shard-000.json
       - name: Enforce provenance and review-state boundaries
         run: |
           python - <<'PY'
           import json
-          p='asr-smoke/asr-shard-000.json'
-          d=json.load(open(p,encoding='utf-8'))
+          d=json.load(open('asr-smoke/asr-shard-000.json',encoding='utf-8'))
           assert d['selectedCount'] == 1, d
           assert d['draftCount'] == 1, d
           assert d['failureCount'] == 0, d
@@ -92,3 +96,123 @@ jobs:
             asr-smoke/asr-shard-000.json
           if-no-files-found: warn
           retention-days: 7
+
+  prepare:
+    needs: smoke
+    runs-on: ubuntu-24.04
+    outputs:
+      expected: ${{ steps.count.outputs.expected }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: count
+        name: Read canonical corpus size
+        run: |
+          COUNT=$(python - <<'PY'
+          import json
+          d=json.load(open('public/data/criticism-transcript-inventory.json',encoding='utf-8'))
+          print(int(d['summary']['canonicalRecordings']))
+          PY
+          )
+          echo "expected=$COUNT" >> "$GITHUB_OUTPUT"
+          test "$COUNT" = '2346'
+      - name: Create or retain transcript-draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          NOTES='Machine-generated ASR transcript drafts for the twelve Videha Discussion & Criticism Internet Archive collections. These files are not publisher captions and are not human/editorially verified transcripts. Every record retains its source URL, ASR model, timestamps, detected language, and review-required state.'
+          if gh release view "$ASR_RELEASE" --repo "$GH_REPO" >/dev/null 2>&1; then
+            gh release edit "$ASR_RELEASE" --repo "$GH_REPO" --title 'Videha Discussion & Criticism ASR Transcript Drafts' --notes "$NOTES"
+          else
+            gh release create "$ASR_RELEASE" --repo "$GH_REPO" --target "$GITHUB_SHA" --title 'Videha Discussion & Criticism ASR Transcript Drafts' --notes "$NOTES"
+          fi
+
+  transcribe:
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install ASR dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          python -m pip install --disable-pip-version-check 'faster-whisper>=1.1,<2'
+      - id: asr
+        name: Transcribe shard ${{ matrix.shard }}
+        continue-on-error: true
+        run: |
+          mkdir -p asr
+          PAD=$(printf '%03d' '${{ matrix.shard }}')
+          python scripts/transcribe_criticism_media.py \
+            --inventory public/data/criticism-transcript-inventory.json \
+            --shard-index '${{ matrix.shard }}' \
+            --shard-count "$SHARD_COUNT" \
+            --model "$ASR_MODEL" \
+            --out "asr/asr-shard-$PAD.json"
+      - name: Persist shard on release
+        if: always() && hashFiles('asr/asr-shard-*.json') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release upload "$ASR_RELEASE" asr/asr-shard-*.json --clobber --repo "$GH_REPO"
+      - name: Upload shard evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: asr-shard-${{ matrix.shard }}
+          path: asr/asr-shard-*.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Enforce complete shard transcription
+        if: steps.asr.outcome == 'failure'
+        run: exit 1
+
+  finalize:
+    if: always()
+    needs: [prepare, transcribe]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download persisted shard manifests
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          mkdir -p downloaded final
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern 'asr-shard-*.json' --dir downloaded
+      - id: merge
+        name: Merge ASR corpus and enforce coverage
+        continue-on-error: true
+        run: |
+          python scripts/merge_criticism_transcripts.py --input downloaded --out final --require-complete
+      - name: Publish per-part transcript datasets and corpus manifest
+        if: always() && hashFiles('final/criticism-transcript-manifest.json') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release upload "$ASR_RELEASE" final/criticism-transcripts-part-*.json final/criticism-transcript-manifest.json --clobber --repo "$GH_REPO"
+      - name: Publish completion summary into repository
+        if: steps.merge.outcome == 'success'
+        run: |
+          cp final/criticism-transcript-manifest.json public/data/criticism-transcript-manifest.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/data/criticism-transcript-manifest.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Publish complete criticism ASR transcript manifest [skip asr]'
+          git push
+      - name: Enforce complete corpus
+        if: steps.merge.outcome == 'failure'
+        run: exit 1
