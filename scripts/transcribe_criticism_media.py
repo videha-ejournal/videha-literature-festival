@@ -16,6 +16,8 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
+VALID_COVERAGE_STATUSES = {"asr-draft", "no-speech-detected"}
+
 
 def run(cmd: list[str]) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, text=True, capture_output=True)
@@ -145,7 +147,7 @@ def main() -> int:
             try:
                 record = transcribe_one(model, row, wav, args.model)
                 records.append(record)
-                if record["status"] != "asr-draft":
+                if record["status"] not in VALID_COVERAGE_STATUSES:
                     failures.append(record)
                 print(f"  -> {record['status']} · {len(record.get('plainText',''))} chars", flush=True)
             except Exception as exc:
@@ -164,8 +166,10 @@ def main() -> int:
             finally:
                 wav.unlink(missing_ok=True)
 
+    draft_count = sum(record.get("status") == "asr-draft" for record in records)
+    no_speech_count = sum(record.get("status") == "no-speech-detected" for record in records)
     result = {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "generated": datetime.now(timezone.utc).isoformat(),
         "inventoryGenerated": inventory.get("generated"),
         "asrModel": args.model,
@@ -173,12 +177,14 @@ def main() -> int:
         "shardCount": args.shard_count,
         "canonicalRecordingCount": len(all_rows),
         "selectedCount": len(selected),
-        "draftCount": sum(record.get("status") == "asr-draft" for record in records),
+        "draftCount": draft_count,
+        "noSpeechCount": no_speech_count,
+        "coveredCount": draft_count + no_speech_count,
         "failureCount": len(failures),
         "records": records,
     }
     out.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"Completed {len(records)}; drafts {result['draftCount']}; failures {len(failures)}")
+    print(f"Completed {len(records)}; drafts {draft_count}; no-speech {no_speech_count}; failures {len(failures)}")
     return 1 if failures else 0
 
 

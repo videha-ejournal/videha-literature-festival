@@ -11,6 +11,7 @@ from pathlib import Path
 
 RELEASE_TAG = "criticism-transcripts-v1"
 REPO = "videha-ejournal/videha-literature-festival"
+VALID_COVERAGE_STATUSES = {"asr-draft", "no-speech-detected"}
 
 
 def asset_url(name: str) -> str:
@@ -43,7 +44,8 @@ def main() -> int:
     expected = max(expected_counts) if expected_counts else 0
     records = sorted(records_by_id.values(), key=lambda r: (int(r.get("part") or 0), str(r.get("logicalSource") or "").lower()))
     statuses = Counter(str(r.get("status") or "unknown") for r in records)
-    complete = bool(expected) and len(records) == expected and statuses.get("asr-draft", 0) == expected
+    covered = sum(statuses.get(status, 0) for status in VALID_COVERAGE_STATUSES)
+    complete = bool(expected) and len(records) == expected and covered == expected
 
     output = Path(args.out)
     output.mkdir(parents=True, exist_ok=True)
@@ -55,10 +57,10 @@ def main() -> int:
         part_records = groups.get(part, [])
         name = f"criticism-transcripts-part-{part:02d}.json"
         part_data = {
-            "schemaVersion": 1,
+            "schemaVersion": 2,
             "generated": datetime.now(timezone.utc).isoformat(),
             "part": part,
-            "status": "asr-draft-corpus",
+            "status": "machine-asr-accessibility-aids",
             "humanVerified": False,
             "editorialReview": "not-reviewed",
             "records": part_records,
@@ -68,20 +70,22 @@ def main() -> int:
             "part": part,
             "records": len(part_records),
             "asrDrafts": sum(r.get("status") == "asr-draft" for r in part_records),
+            "noSpeechDetected": sum(r.get("status") == "no-speech-detected" for r in part_records),
             "asset": name,
             "url": asset_url(name),
         })
 
     manifest_name = "criticism-transcript-manifest.json"
     manifest = {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "generated": datetime.now(timezone.utc).isoformat(),
         "releaseTag": RELEASE_TAG,
         "releaseUrl": f"https://github.com/{REPO}/releases/tag/{RELEASE_TAG}",
-        "status": "complete-asr-draft-corpus" if complete else "incomplete-asr-draft-corpus",
+        "status": "complete-machine-asr-coverage" if complete else "incomplete-machine-asr-coverage",
         "complete": complete,
         "expectedCanonicalRecordings": expected,
         "processedRecords": len(records),
+        "coveredRecords": covered,
         "statusCounts": dict(sorted(statuses.items())),
         "models": sorted(model_names),
         "shardsExpected": shard_count,
@@ -89,11 +93,11 @@ def main() -> int:
         "missingShards": [i for i in range(shard_count or 0) if i not in shard_indexes],
         "humanVerified": False,
         "editorialReview": "not-reviewed",
-        "claimBoundary": "These are machine ASR drafts. They are not publisher captions and are not human/editorially verified transcripts.",
+        "claimBoundary": "These are machine ASR accessibility aids. Spoken-text records are machine drafts; no-speech records mean the ASR emitted no speech text. Neither state is publisher-caption or human/editorial verification.",
         "parts": parts,
     }
     (output / manifest_name).write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps({k: manifest[k] for k in ("status", "expectedCanonicalRecordings", "processedRecords", "statusCounts", "shardsExpected", "shardsPresent")}, ensure_ascii=False))
+    print(json.dumps({k: manifest[k] for k in ("status", "expectedCanonicalRecordings", "processedRecords", "coveredRecords", "statusCounts", "shardsExpected", "shardsPresent")}, ensure_ascii=False))
     if args.require_complete and not complete:
         return 1
     return 0
