@@ -61,20 +61,23 @@ jobs:
           assert not failures, failures
 
           review=json.loads(Path('final-metadata/criticism-human-review-queue.json').read_text(encoding='utf-8'))
-          records=review.get('records') if isinstance(review,dict) else review
-          assert isinstance(records,list), 'review queue records missing'
-          assert len(records)==2346, len(records)
-          for row in records:
-              if 'humanVerified' in row:
-                  assert row['humanVerified'] is False, row.get('id')
-              if 'editorialReview' in row:
-                  assert row['editorialReview']=='not-reviewed', row.get('id')
+          assert isinstance(review,dict), 'review queue payload must be an object'
+          assert review.get('records')==2346, review.get('records')
+          queue=review.get('queue')
+          assert isinstance(queue,list), 'review queue list missing'
+          assert len(queue)==2346, len(queue)
+          assert review.get('highPriority')==238, review.get('highPriority')
+          assert review.get('mediumPriority')==654, review.get('mediumPriority')
+          assert review.get('routinePriority')==1454, review.get('routinePriority')
+          for row in queue:
+              assert row.get('humanVerified') is False, row.get('id')
+              assert row.get('editorialReview')=='not-reviewed', row.get('id')
           print({
               'strictMachineCorpus':'passed',
               'records':manifest['records'],
               'shards':manifest['shardsPresent'],
               'complete':manifest['complete'],
-              'humanReviewQueueRecords':len(records),
+              'humanReviewQueueRecords':len(queue),
               'humanCertificationClaimed':False,
           })
           PY
