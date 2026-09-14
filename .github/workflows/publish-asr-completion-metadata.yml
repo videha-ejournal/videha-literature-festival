@@ -40,6 +40,7 @@ jobs:
           set -euo pipefail
           python - <<'PY'
           import json
+          from collections import Counter
           from pathlib import Path
 
           manifest=json.loads(Path('final-metadata/criticism-transcript-manifest.json').read_text(encoding='utf-8'))
@@ -66,9 +67,12 @@ jobs:
           queue=review.get('queue')
           assert isinstance(queue,list), 'review queue list missing'
           assert len(queue)==2346, len(queue)
-          assert review.get('highPriority')==238, review.get('highPriority')
-          assert review.get('mediumPriority')==654, review.get('mediumPriority')
-          assert review.get('routinePriority')==1454, review.get('routinePriority')
+          counts=Counter(row.get('priority') for row in queue)
+          assert set(counts).issubset({'high','medium','routine'}), counts
+          assert review.get('highPriority')==counts['high'], (review.get('highPriority'),counts['high'])
+          assert review.get('mediumPriority')==counts['medium'], (review.get('mediumPriority'),counts['medium'])
+          assert review.get('routinePriority')==counts['routine'], (review.get('routinePriority'),counts['routine'])
+          assert sum(counts.values())==2346, counts
           for row in queue:
               assert row.get('humanVerified') is False, row.get('id')
               assert row.get('editorialReview')=='not-reviewed', row.get('id')
@@ -78,6 +82,7 @@ jobs:
               'shards':manifest['shardsPresent'],
               'complete':manifest['complete'],
               'humanReviewQueueRecords':len(queue),
+              'reviewPriorities':dict(counts),
               'humanCertificationClaimed':False,
           })
           PY
