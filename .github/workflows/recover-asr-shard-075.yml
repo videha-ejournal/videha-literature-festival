@@ -1,0 +1,302 @@
+name: Recover final ASR shard 075
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/recover-asr-shard-075.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: read
+
+env:
+  ASR_RELEASE: criticism-transcripts-v1
+  ASR_MODEL: small
+  SHARD_COUNT: '192'
+  SHARD_INDEX: '75'
+  TARGET_ID: p11-7fb4a51494edf5
+  ASR_CHUNK_SECONDS: '300'
+  ASR_RUNTIME_IMAGE: ghcr.io/videha-ejournal/videha-asr@sha256:3632d99fd8209ded64f3bed129c421589a2ed118ea11a58dff3f6b14583922bb
+
+jobs:
+  recover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    container:
+      image: ghcr.io/videha-ejournal/videha-asr@sha256:3632d99fd8209ded64f3bed129c421589a2ed118ea11a58dff3f6b14583922bb
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Recover only the unresolved tail recording
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p recovery75
+          CHECKPOINT="recovery75/asr-record-$TARGET_ID.json"
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern "asr-record-$TARGET_ID.json" --dir recovery75
+          python - <<'PY'
+          import json
+          import math
+          import os
+          import subprocess
+          import sys
+          import time
+          import urllib.request
+          from pathlib import Path
+
+          sys.path.insert(0, str(Path('scripts').resolve()))
+          import transcribe_criticism_media as asr
+
+          shard_index = int(os.environ['SHARD_INDEX'])
+          shard_count = int(os.environ['SHARD_COUNT'])
+          target_id = os.environ['TARGET_ID']
+          chunk_seconds = int(os.environ['ASR_CHUNK_SECONDS'])
+          model_name = os.environ['ASR_MODEL']
+          checkpoint_path = Path('recovery75') / f'asr-record-{target_id}.json'
+
+          inventory = json.loads(Path('public/data/criticism-transcript-inventory.json').read_text(encoding='utf-8'))
+          all_rows = asr.flatten(inventory)
+          selected = asr.rows_for_shard(all_rows, shard_index, shard_count)
+          row_by_id = {asr.stable_id(int(row['part']), str(row['logicalSource'])): row for row in selected}
+          if target_id not in row_by_id:
+              raise SystemExit(f'{target_id} is not in shard {shard_index}')
+          row = row_by_id[target_id]
+          expected_ids = set(row_by_id)
+          records, partials, meta = asr.load_resume_state(
+              [str(checkpoint_path)],
+              shard_index=shard_index,
+              shard_count=shard_count,
+              canonical_count=len(all_rows),
+              model_name=model_name,
+              expected_ids=expected_ids,
+          )
+          partial = partials.get(target_id)
+          if not partial:
+              if target_id in records:
+                  print('Target recording is already complete; preserving existing record.')
+                  raise SystemExit(0)
+              raise SystemExit('Durable partial checkpoint is missing')
+
+          existing = {
+              int(chunk.get('chunkIndex', -1)): chunk
+              for chunk in partial.get('chunks', [])
+              if int(chunk.get('chunkIndex', -1)) >= 0
+          }
+          expected_before = int(partial.get('expectedChunkCount') or 0)
+          missing = [i for i in range(expected_before) if i not in existing]
+          if missing != [26] or sorted(existing) != list(range(26)):
+              raise SystemExit(f'Unexpected checkpoint shape: expected={expected_before}, missing={missing}, existing={sorted(existing)}')
+          tail_start = 26 * chunk_seconds
+
+          def probe_audio_duration(source: str) -> float:
+              result = subprocess.run([
+                  'ffprobe', '-v', 'error', '-rw_timeout', '120000000',
+                  '-select_streams', 'a:0', '-show_entries', 'stream=duration',
+                  '-of', 'default=noprint_wrappers=1:nokey=1', source,
+              ], text=True, capture_output=True)
+              if result.returncode != 0:
+                  return 0.0
+              for raw in (result.stdout or '').splitlines():
+                  try:
+                      value = float(raw.strip())
+                  except ValueError:
+                      continue
+                  if value > 0:
+                      return value
+              return 0.0
+
+          def shrink_to_audio_end(audio_duration: float) -> None:
+              # This is only permitted when the audio stream demonstrably ends before the
+              # nominal container tail. No synthetic no-speech chunk is invented.
+              partial['durationSeconds'] = round(audio_duration, 3)
+              partial['expectedChunkCount'] = len(existing)
+              last = existing[max(existing)]
+              if float(last.get('endSeconds') or 0.0) > audio_duration:
+                  last['endSeconds'] = round(audio_duration, 3)
+                  for segment in last.get('segments', []):
+                      if float(segment.get('end') or 0.0) > audio_duration:
+                          segment['end'] = round(audio_duration, 3)
+                      if float(segment.get('start') or 0.0) > audio_duration:
+                          segment['start'] = round(audio_duration, 3)
+              partial['chunks'] = [existing[i] for i in sorted(existing)]
+              partial['updated'] = asr.now_iso()
+
+          audio_duration = probe_audio_duration(row['selectedUrl'])
+          print({'remoteAudioStreamDuration': audio_duration, 'containerDuration': partial.get('durationSeconds'), 'tailStart': tail_start})
+
+          if audio_duration > 0 and audio_duration <= tail_start + 0.25:
+              print('Audio stream ends at/before the nominal tail; removing only the phantom container tail.')
+              shrink_to_audio_end(audio_duration)
+          else:
+              local_media = Path('/tmp') / row['selectedName']
+              last_error = ''
+              for attempt in range(1, 4):
+                  try:
+                      local_media.unlink(missing_ok=True)
+                      print(f'Downloading canonical media locally for tail recovery, attempt {attempt}/3 ...', flush=True)
+                      urllib.request.urlretrieve(row['selectedUrl'], local_media)
+                      if local_media.exists() and local_media.stat().st_size >= max(4096, int(row.get('selectedBytes') or 0) * 0.95):
+                          break
+                      raise RuntimeError(f'incomplete local media: {local_media.stat().st_size if local_media.exists() else 0} bytes')
+                  except Exception as exc:
+                      last_error = f'{type(exc).__name__}: {exc}'
+                      if attempt < 3:
+                          time.sleep(2 ** attempt)
+              else:
+                  raise SystemExit(f'Canonical media download failed: {last_error}')
+
+              local_audio_duration = probe_audio_duration(str(local_media))
+              print({'localAudioStreamDuration': local_audio_duration, 'downloadedBytes': local_media.stat().st_size})
+              if local_audio_duration > 0:
+                  audio_duration = local_audio_duration
+
+              if audio_duration > 0 and audio_duration <= tail_start + 0.25:
+                  print('Local probe confirms audio stream ends before nominal container tail.')
+                  shrink_to_audio_end(audio_duration)
+              else:
+                  duration = audio_duration if audio_duration > 0 else float(partial.get('durationSeconds') or 0.0)
+                  end = min(duration, tail_start + chunk_seconds)
+                  if end <= tail_start:
+                      raise SystemExit(f'No decodable tail interval remains: {tail_start}..{end}')
+                  wav = Path('/tmp') / f'{target_id}-0026.wav'
+                  ok, error = asr.extract_audio_chunk(str(local_media), wav, tail_start, max(1.0, end - tail_start))
+                  if not ok:
+                      raise SystemExit(f'Local tail extraction failed: {error}')
+                  from faster_whisper import WhisperModel
+                  model = WhisperModel(
+                      model_name,
+                      device='cpu',
+                      compute_type='int8',
+                      cpu_threads=max(2, os.cpu_count() or 2),
+                      num_workers=1,
+                  )
+                  chunk = asr.transcribe_chunk(model, wav, chunk_index=26, start=tail_start, end=end)
+                  existing[26] = chunk
+                  partial['durationSeconds'] = round(duration, 3)
+                  partial['expectedChunkCount'] = 27
+                  partial['chunks'] = [existing[i] for i in sorted(existing)]
+                  partial['updated'] = asr.now_iso()
+                  print({'tailRecovered': True, 'tailStatus': chunk['status'], 'tailChars': len(chunk.get('plainText', ''))})
+
+          record = asr.build_record_from_partial(row, partial, model_name, asr.runtime_provenance(model_name, os.environ['ASR_RUNTIME_IMAGE']))
+          records_by_id = {target_id: record}
+          asr.persist_checkpoint(
+              checkpoint_path,
+              inventory=inventory,
+              model_name=model_name,
+              shard_index=shard_index,
+              shard_count=shard_count,
+              canonical_count=len(all_rows),
+              selected_count=len(selected),
+              records_by_id=records_by_id,
+              partials_by_id={},
+              release=os.environ['ASR_RELEASE'],
+              repo=os.environ['GH_REPO'],
+              runtime=asr.runtime_provenance(model_name, os.environ['ASR_RUNTIME_IMAGE']),
+              meta=meta,
+              scope='record',
+              cause='targeted-tail-recovery-complete',
+          )
+          print({'target': target_id, 'status': record['status'], 'durationSeconds': record['durationSeconds'], 'chunkCount': len(record['chunkEvidence'])})
+          PY
+
+      - name: Assemble canonical shard 075 from durable recovery state
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p assemble75
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern 'asr-checkpoint-075.json' --dir assemble75 || true
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern 'asr-record-*.json' --dir assemble75 || true
+          RESUME=()
+          [ ! -f assemble75/asr-checkpoint-075.json ] || RESUME+=(--resume assemble75/asr-checkpoint-075.json)
+          for f in assemble75/asr-record-*.json; do [ -e "$f" ] && RESUME+=(--resume "$f"); done
+          python scripts/transcribe_criticism_media.py \
+            --inventory public/data/criticism-transcript-inventory.json \
+            --shard-index "$SHARD_INDEX" \
+            --shard-count "$SHARD_COUNT" \
+            --model "$ASR_MODEL" \
+            --runtime-image "$ASR_RUNTIME_IMAGE" \
+            --assemble-only \
+            "${RESUME[@]}" \
+            --out assemble75/asr-shard-075.json
+          python - <<'PY'
+          import json
+          d=json.load(open('assemble75/asr-shard-075.json',encoding='utf-8'))
+          assert d['completeShard'] is True, d
+          assert d['selectedCount'] == 12 and d['coveredCount'] == 12 and d['failureCount'] == 0, d
+          print({'shard':75,'selected':d['selectedCount'],'covered':d['coveredCount'],'completeShard':d['completeShard']})
+          PY
+          gh release upload "$ASR_RELEASE" assemble75/asr-shard-075.json --clobber --repo "$GH_REPO"
+
+      - name: Enforce 2346 recordings and 192 canonical shards
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p canonical final
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern 'asr-shard-*.json' --dir canonical
+          test "$(find canonical -maxdepth 1 -type f -name 'asr-shard-*.json' | wc -l | tr -d ' ')" = '192'
+          python scripts/merge_criticism_transcripts.py \
+            --input canonical \
+            --inventory public/data/criticism-transcript-inventory.json \
+            --out final \
+            --require-complete
+          python - <<'PY'
+          import json
+          d=json.load(open('final/criticism-transcript-manifest.json',encoding='utf-8'))
+          required={
+            'records':2346,
+            'expectedTotal':2346,
+            'shardsPresent':192,
+            'shardsExpected':192,
+            'duplicateCanonicalMediaUrlCount':0,
+            'missingCanonicalMediaUrlCount':0,
+            'extraCanonicalMediaUrlCount':0,
+            'complete':True,
+          }
+          for key,value in required.items():
+              assert d.get(key) == value, (key,d.get(key),value)
+          assert d.get('missingShards') == [], d.get('missingShards')
+          print(required | {'missingShards': d.get('missingShards')})
+          PY
+
+      - name: Remove superseded shard-075 recovery assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh release delete-asset "$ASR_RELEASE" asr-checkpoint-075.json -y --repo "$GH_REPO" || true
+          python - <<'PY' > /tmp/shard75-record-assets.txt
+          import glob, json, os
+          for path in glob.glob('assemble75/asr-record-*.json'):
+              try:
+                  d=json.load(open(path,encoding='utf-8'))
+              except Exception:
+                  continue
+              if int(d.get('shardIndex',-1)) == 75:
+                  print(os.path.basename(path))
+          PY
+          while IFS= read -r asset; do
+            [ -n "$asset" ] || continue
+            gh release delete-asset "$ASR_RELEASE" "$asset" -y --repo "$GH_REPO" || true
+          done < /tmp/shard75-record-assets.txt
+
+      - name: Upload strict completion evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: asr-final-shard-075-recovery-evidence
+          path: |
+            assemble75/asr-shard-075.json
+            final/criticism-transcript-manifest.json
+          retention-days: 30
