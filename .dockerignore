@@ -1,0 +1,6 @@
+.git
+node_modules
+dist
+asr
+asr-*
+*.tar.gz

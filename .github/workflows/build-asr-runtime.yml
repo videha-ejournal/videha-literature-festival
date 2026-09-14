@@ -1,0 +1,43 @@
+name: Build pinned Videha ASR runtime
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - docker/asr/Dockerfile
+      - requirements-asr.lock
+      - .github/workflows/build-asr-runtime.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: videha-asr-runtime
+  cancel-in-progress: false
+
+env:
+  ASR_IMAGE_REPO: ghcr.io/videha-ejournal/videha-asr
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Build once and publish content-keyed runtime image
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          RUNTIME_KEY=$(cat docker/asr/Dockerfile requirements-asr.lock | sha256sum | awk '{print substr($1,1,20)}')
+          IMAGE_TAG="$ASR_IMAGE_REPO:runtime-$RUNTIME_KEY"
+          echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          if docker pull "$IMAGE_TAG"; then
+            echo "Pinned runtime already exists: $IMAGE_TAG"
+            exit 0
+          fi
+          docker build --pull -f docker/asr/Dockerfile -t "$IMAGE_TAG" .
+          docker push "$IMAGE_TAG"
+          docker pull "$IMAGE_TAG"
+          docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_TAG"
