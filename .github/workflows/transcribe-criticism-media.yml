@@ -5,56 +5,86 @@ on:
     branches: [main]
     paths:
       - scripts/transcribe_criticism_media.py
+      - scripts/build_asr_recovery_state.py
+      - scripts/build_asr_review_queue.py
       - scripts/merge_criticism_transcripts.py
+      - requirements-asr.lock
+      - docker/asr/Dockerfile
       - .github/workflows/transcribe-criticism-media.yml
   workflow_dispatch:
 
 permissions:
   contents: write
-  actions: write
-
-concurrency:
-  group: criticism-asr-${{ github.ref }}
-  cancel-in-progress: true
+  packages: write
 
 env:
   ASR_RELEASE: criticism-transcripts-v1
   ASR_MODEL: small
   SHARD_COUNT: '192'
+  ASR_CHUNK_SECONDS: '300'
+  LONG_RECORDING_BYTES: '67108864'
+  LONG_RECORDING_SECONDS: '1800'
+  ASR_IMAGE_REPO: ghcr.io/videha-ejournal/videha-asr
+
+# Never cancel a healthy recovery attempt. A new revision waits and then resumes durable state.
+concurrency:
+  group: criticism-asr-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  cancel-obsolete:
+  runtime:
+    name: Prepare immutable ASR runtime
     runs-on: ubuntu-24.04
+    outputs:
+      image_ref: ${{ steps.image.outputs.image_ref }}
+      runtime_key: ${{ steps.image.outputs.runtime_key }}
     steps:
-      - name: Cancel older ASR runs from the pre-concurrency workflow
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: image
+        name: Reuse or build the pinned ASR container
         env:
           GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
         run: |
-          for status in in_progress queued; do
-            gh run list --repo "$GH_REPO" --workflow transcribe-criticism-media.yml --status "$status" --limit 100 --json databaseId --jq '.[].databaseId' |
-            while IFS= read -r run_id; do
-              [ -n "$run_id" ] || continue
-              [ "$run_id" = "$GITHUB_RUN_ID" ] && continue
-              echo "Cancelling obsolete ASR run $run_id"
-              gh run cancel "$run_id" --repo "$GH_REPO" || true
-            done
-          done
+          set -euo pipefail
+          RUNTIME_KEY=$(cat docker/asr/Dockerfile requirements-asr.lock | sha256sum | awk '{print substr($1,1,20)}')
+          IMAGE_TAG="$ASR_IMAGE_REPO:runtime-$RUNTIME_KEY"
+          echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          if ! docker pull "$IMAGE_TAG"; then
+            docker build --pull -f docker/asr/Dockerfile -t "$IMAGE_TAG" .
+            docker push "$IMAGE_TAG"
+            docker pull "$IMAGE_TAG"
+          fi
+          IMAGE_REF=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_TAG")
+          test -n "$IMAGE_REF"
+          case "$IMAGE_REF" in *@sha256:*) ;; *) echo "Runtime image is not digest-pinned: $IMAGE_REF" >&2; exit 1;; esac
+          docker run --rm -i "$IMAGE_REF" python - <<'PY'
+          import importlib.metadata
+          expected={
+            'faster-whisper':'1.2.1',
+            'ctranslate2':'4.8.2',
+            'onnxruntime':'1.30.0',
+          }
+          for package, version in expected.items():
+              actual=importlib.metadata.version(package)
+              assert actual == version, (package, actual, version)
+          print(expected)
+          PY
+          echo "runtime_key=$RUNTIME_KEY" >> "$GITHUB_OUTPUT"
+          echo "image_ref=$IMAGE_REF" >> "$GITHUB_OUTPUT"
 
   smoke:
-    needs: cancel-obsolete
+    needs: runtime
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    container:
+      image: ${{ needs.runtime.outputs.image_ref }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    env:
+      ASR_RUNTIME_IMAGE: ${{ needs.runtime.outputs.image_ref }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install ASR dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends ffmpeg
-          python -m pip install --disable-pip-version-check 'faster-whisper>=1.1,<2'
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Select the smallest real canonical recording for smoke testing
         run: |
           mkdir -p asr-smoke
@@ -85,13 +115,15 @@ jobs:
           json.dump(smoke,open(dst,'w',encoding='utf-8'),ensure_ascii=False,indent=2)
           print({'part':collection['part'],'name':item['selectedName'],'bytes':size})
           PY
-      - name: Transcribe one real Internet Archive recording
+      - name: Transcribe one real recording with chunk recovery enabled
         run: |
           python scripts/transcribe_criticism_media.py \
             --inventory asr-smoke/inventory.json \
             --shard-index 0 \
             --shard-count 1 \
             --limit 1 \
+            --chunk-seconds "$ASR_CHUNK_SECONDS" \
+            --runtime-image "$ASR_RUNTIME_IMAGE" \
             --model "$ASR_MODEL" \
             --out asr-smoke/asr-shard-000.json
       - name: Enforce provenance and review-state boundaries
@@ -102,10 +134,14 @@ jobs:
           assert d['selectedCount'] == 1, d
           assert d['coveredCount'] == 1, d
           assert d['failureCount'] == 0, d
+          assert d['completeShard'] is True, d
           r=d['records'][0]
           assert r['status'] in {'asr-draft','no-speech-detected'}, r
           assert r['humanVerified'] is False, r
           assert r['editorialReview'] == 'not-reviewed', r
+          assert r.get('sourceMediaBytes',0) >= 0, r
+          assert r.get('decodedAudioFingerprintSha256'), r
+          assert (r.get('asrRuntime') or {}).get('runtimeImage','').startswith('ghcr.io/'), r
           if r['status'] == 'asr-draft':
               assert r.get('plainText','').strip(), r
               assert r.get('segments'), r
@@ -113,7 +149,7 @@ jobs:
           PY
       - name: Upload smoke evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: criticism-asr-smoke
           path: |
@@ -123,14 +159,21 @@ jobs:
           retention-days: 7
 
   prepare:
-    needs: smoke
+    needs: [runtime, smoke]
     runs-on: ubuntu-24.04
+    container:
+      image: ${{ needs.runtime.outputs.image_ref }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     outputs:
       expected: ${{ steps.count.outputs.expected }}
-      matrix: ${{ steps.matrix.outputs.matrix }}
-      missing: ${{ steps.matrix.outputs.missing }}
+      normal_matrix: ${{ steps.plan.outputs.normal_matrix }}
+      long_matrix: ${{ steps.plan.outputs.long_matrix }}
+      assemble_matrix: ${{ steps.plan.outputs.assemble_matrix }}
+      missing: ${{ steps.plan.outputs.missing }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - id: count
         name: Read canonical corpus size
         run: |
@@ -147,192 +190,386 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          NOTES='Machine-generated ASR accessibility aids for the twelve Videha Discussion & Criticism Internet Archive collections. Spoken-text records are machine transcript drafts; no-speech records mean the ASR pass emitted no speech text. These are not publisher captions and are not human/editorially verified transcripts. Every record retains source URL, model, timestamps/language evidence where available, and review-required state.'
+          NOTES='Machine-generated ASR accessibility aids for the twelve Videha Discussion & Criticism Internet Archive collections. Spoken-text records are machine transcript drafts; no-speech records mean the ASR pass emitted no speech text. These are not publisher captions and are not human/editorially verified transcripts. Canonical asr-shard assets are published only after whole-shard success; checkpoint and per-record assets are non-canonical recovery state.'
           if gh release view "$ASR_RELEASE" --repo "$GH_REPO" >/dev/null 2>&1; then
             gh release edit "$ASR_RELEASE" --repo "$GH_REPO" --title 'Videha Discussion & Criticism ASR Accessibility Aids' --notes "$NOTES"
           else
             gh release create "$ASR_RELEASE" --repo "$GH_REPO" --target "$GITHUB_SHA" --title 'Videha Discussion & Criticism ASR Accessibility Aids' --notes "$NOTES"
           fi
-      - id: matrix
-        name: Validate persisted canonical shards and select only incomplete work
+      - id: plan
+        name: Build recovery-state manifest and isolate long recordings
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          mkdir -p persisted
+          set -euo pipefail
+          mkdir -p persisted recovery
           gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern 'asr-shard-*.json' --dir persisted || true
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern 'asr-checkpoint-*.json' --dir persisted || true
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern 'asr-record-*.json' --dir persisted || true
+          python scripts/build_asr_recovery_state.py \
+            --inventory public/data/criticism-transcript-inventory.json \
+            --assets persisted \
+            --out recovery/asr-recovery-state.json \
+            --shard-count "$SHARD_COUNT" \
+            --model "$ASR_MODEL" \
+            --long-threshold-bytes "$LONG_RECORDING_BYTES" \
+            --long-duration-seconds "$LONG_RECORDING_SECONDS"
           python - <<'PY'
-          import hashlib, json, os
-          from pathlib import Path
-
-          shard_count=int(os.environ['SHARD_COUNT'])
-          model=os.environ['ASR_MODEL']
-          inv=json.load(open('public/data/criticism-transcript-inventory.json',encoding='utf-8'))
-          rows=[]
-          for collection in inv.get('collections',[]):
-              part=int(collection['part'])
-              for item in collection.get('canonicalMedia',[]):
-                  rows.append((part,item['logicalSource']))
-          rows.sort(key=lambda row:(row[0],row[1].lower()))
-          assert len(rows) == 2346, len(rows)
-
-          def stable_id(part, logical):
-              return f"p{part:02d}-{hashlib.sha1(f'{part}|{logical}'.encode('utf-8')).hexdigest()[:14]}"
-
-          valid_status={'asr-draft','no-speech-detected'}
-          missing=[]
-          for shard in range(shard_count):
-              selected=[row for i,row in enumerate(rows) if i % shard_count == shard]
-              expected_ids={stable_id(*row) for row in selected}
-              path=Path('persisted') / f'asr-shard-{shard:03d}.json'
-              ok=False
-              if path.exists():
-                  try:
-                      d=json.load(open(path,encoding='utf-8'))
-                      records=d.get('records',[])
-                      ids=[str(r.get('id') or '') for r in records]
-                      ok=(
-                          int(d.get('shardIndex',-1)) == shard
-                          and int(d.get('shardCount',-1)) == shard_count
-                          and int(d.get('canonicalRecordingCount',-1)) == len(rows)
-                          and str(d.get('asrModel') or '') == model
-                          and int(d.get('selectedCount',-1)) == len(selected)
-                          and int(d.get('coveredCount',-1)) == len(selected)
-                          and int(d.get('failureCount',-1)) == 0
-                          and len(records) == len(selected)
-                          and len(set(ids)) == len(selected)
-                          and set(ids) == expected_ids
-                          and all(
-                              r.get('status') in valid_status
-                              and r.get('humanVerified') is False
-                              and r.get('editorialReview') == 'not-reviewed'
-                              for r in records
-                          )
-                      )
-                  except Exception as exc:
-                      print(f'invalid shard {shard}: {type(exc).__name__}: {exc}')
-              if not ok:
-                  missing.append(shard)
-
-          matrix=missing if missing else [-1]
-          print({'persistedComplete': shard_count-len(missing), 'missing': missing, 'matrix': matrix})
+          import json, os
+          d=json.load(open('recovery/asr-recovery-state.json',encoding='utf-8'))
+          normal=d['normalShardMatrix'] or [-1]
+          long=d['longRecordingMatrix'] or [{'shard':-1,'id':'none'}]
+          assemble=d['assembleShardMatrix'] or [-1]
           with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as f:
-              f.write('matrix='+json.dumps(matrix,separators=(',',':'))+'\n')
-              f.write('missing='+json.dumps(missing,separators=(',',':'))+'\n')
+              f.write('normal_matrix='+json.dumps(normal,separators=(',',':'))+'\n')
+              f.write('long_matrix='+json.dumps(long,separators=(',',':'))+'\n')
+              f.write('assemble_matrix='+json.dumps(assemble,separators=(',',':'))+'\n')
+              f.write('missing='+json.dumps(d['missingShards'],separators=(',',':'))+'\n')
           PY
+          gh release upload "$ASR_RELEASE" recovery/asr-recovery-state.json --clobber --repo "$GH_REPO"
+      - name: Upload recovery plan evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: criticism-asr-recovery-plan
+          path: recovery/asr-recovery-state.json
+          retention-days: 14
 
-  transcribe:
-    needs: prepare
+  transcribe-normal:
+    name: normal shard ${{ matrix.shard }}
+    needs: [runtime, prepare]
     runs-on: ubuntu-24.04
     timeout-minutes: 360
+    container:
+      image: ${{ needs.runtime.outputs.image_ref }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       fail-fast: false
       max-parallel: 4
       matrix:
-        shard: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+        shard: ${{ fromJSON(needs.prepare.outputs.normal_matrix) }}
+    env:
+      ASR_RUNTIME_IMAGE: ${{ needs.runtime.outputs.image_ref }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: matrix.shard >= 0
-      - uses: actions/setup-python@v5
-        if: matrix.shard >= 0
-        with:
-          python-version: '3.12'
-      - name: Restore prior shard and durable checkpoint
-        if: matrix.shard >= 0
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          mkdir -p asr
-          PAD=$(printf '%03d' '${{ matrix.shard }}')
-          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern "asr-shard-$PAD.json" --dir asr || true
-          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern "asr-checkpoint-$PAD.json" --dir asr || true
-      - name: Install ASR dependencies
-        if: matrix.shard >= 0
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends ffmpeg
-          python -m pip install --disable-pip-version-check 'faster-whisper>=1.1,<2'
       - id: asr
-        name: Transcribe shard ${{ matrix.shard }} with durable per-recording checkpoints
+        name: Transcribe ordinary-size pending recordings with 5-minute checkpoints
         if: matrix.shard >= 0
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
+          set -euo pipefail
           mkdir -p asr
           PAD=$(printf '%03d' '${{ matrix.shard }}')
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern "asr-checkpoint-$PAD.json" --dir asr || true
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern 'asr-record-*.json' --dir asr || true
+          RESUME=()
+          [ ! -f "asr/asr-checkpoint-$PAD.json" ] || RESUME+=(--resume "asr/asr-checkpoint-$PAD.json")
+          for f in asr/asr-record-*.json; do [ -e "$f" ] && RESUME+=(--resume "$f"); done
           python scripts/transcribe_criticism_media.py \
             --inventory public/data/criticism-transcript-inventory.json \
             --shard-index '${{ matrix.shard }}' \
             --shard-count "$SHARD_COUNT" \
             --model "$ASR_MODEL" \
-            --resume "asr/asr-shard-$PAD.json" \
-            --resume "asr/asr-checkpoint-$PAD.json" \
+            --chunk-seconds "$ASR_CHUNK_SECONDS" \
+            --defer-bytes-above "$LONG_RECORDING_BYTES" \
+            --allow-incomplete \
+            --runtime-image "$ASR_RUNTIME_IMAGE" \
+            "${RESUME[@]}" \
             --checkpoint "asr/asr-checkpoint-$PAD.json" \
+            --checkpoint-scope shard \
             --checkpoint-release "$ASR_RELEASE" \
-            --checkpoint-repo "$GH_REPO" \
-            --out "asr/asr-shard-$PAD.json"
-      - name: Persist only a fully completed canonical shard
-        if: matrix.shard >= 0 && steps.asr.outcome == 'success' && hashFiles('asr/asr-shard-*.json') != ''
+            --checkpoint-repo "$GH_REPO"
+      - name: Upload normal-lane evidence
+        if: always() && matrix.shard >= 0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: asr-normal-shard-${{ matrix.shard }}
+          path: asr/asr-checkpoint-*.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Enforce normal-lane execution
+        if: matrix.shard >= 0 && steps.asr.outcome == 'failure'
+        run: exit 1
+
+  transcribe-long:
+    name: long recording ${{ matrix.item.id }}
+    needs: [runtime, prepare]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    container:
+      image: ${{ needs.runtime.outputs.image_ref }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        item: ${{ fromJSON(needs.prepare.outputs.long_matrix) }}
+    env:
+      ASR_RUNTIME_IMAGE: ${{ needs.runtime.outputs.image_ref }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: matrix.item.shard >= 0
+      - id: asr
+        name: Transcribe one isolated long recording with chunk recovery
+        if: matrix.item.shard >= 0
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
+          set -euo pipefail
+          mkdir -p asr
+          FILE="asr/asr-record-${{ matrix.item.id }}.json"
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern "asr-record-${{ matrix.item.id }}.json" --dir asr || true
+          RESUME=()
+          [ ! -f "$FILE" ] || RESUME+=(--resume "$FILE")
+          python scripts/transcribe_criticism_media.py \
+            --inventory public/data/criticism-transcript-inventory.json \
+            --shard-index '${{ matrix.item.shard }}' \
+            --shard-count "$SHARD_COUNT" \
+            --model "$ASR_MODEL" \
+            --chunk-seconds "$ASR_CHUNK_SECONDS" \
+            --runtime-image "$ASR_RUNTIME_IMAGE" \
+            --only-id '${{ matrix.item.id }}' \
+            "${RESUME[@]}" \
+            --checkpoint "$FILE" \
+            --checkpoint-scope record \
+            --checkpoint-release "$ASR_RELEASE" \
+            --checkpoint-repo "$GH_REPO"
+      - name: Upload long-recording evidence
+        if: always() && matrix.item.shard >= 0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: asr-long-${{ matrix.item.id }}
+          path: asr/asr-record-*.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Enforce long-recording execution
+        if: matrix.item.shard >= 0 && steps.asr.outcome == 'failure'
+        run: exit 1
+
+  assemble:
+    name: assemble shard ${{ matrix.shard }}
+    if: always()
+    needs: [runtime, prepare, transcribe-normal, transcribe-long]
+    runs-on: ubuntu-24.04
+    container:
+      image: ${{ needs.runtime.outputs.image_ref }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        shard: ${{ fromJSON(needs.prepare.outputs.assemble_matrix) }}
+    env:
+      ASR_RUNTIME_IMAGE: ${{ needs.runtime.outputs.image_ref }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: matrix.shard >= 0
+      - id: assemble
+        name: Assemble only fully covered canonical shard
+        if: matrix.shard >= 0
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p asr
+          PAD=$(printf '%03d' '${{ matrix.shard }}')
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern "asr-checkpoint-$PAD.json" --dir asr || true
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern 'asr-record-*.json' --dir asr || true
+          RESUME=()
+          [ ! -f "asr/asr-checkpoint-$PAD.json" ] || RESUME+=(--resume "asr/asr-checkpoint-$PAD.json")
+          for f in asr/asr-record-*.json; do [ -e "$f" ] && RESUME+=(--resume "$f"); done
+          python scripts/transcribe_criticism_media.py \
+            --inventory public/data/criticism-transcript-inventory.json \
+            --shard-index '${{ matrix.shard }}' \
+            --shard-count "$SHARD_COUNT" \
+            --model "$ASR_MODEL" \
+            --runtime-image "$ASR_RUNTIME_IMAGE" \
+            --assemble-only \
+            "${RESUME[@]}" \
+            --out "asr/asr-shard-$PAD.json"
+      - name: Publish canonical shard only after successful assembly
+        if: matrix.shard >= 0 && steps.assemble.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
           PAD=$(printf '%03d' '${{ matrix.shard }}')
           gh release upload "$ASR_RELEASE" "asr/asr-shard-$PAD.json" --clobber --repo "$GH_REPO"
           gh release delete-asset "$ASR_RELEASE" "asr-checkpoint-$PAD.json" -y --repo "$GH_REPO" || true
-      - name: Upload shard evidence
+          python - <<'PY' > /tmp/record-assets.txt
+          import glob, json
+          shard=int('${{ matrix.shard }}')
+          for path in glob.glob('asr/asr-record-*.json'):
+              try:
+                  d=json.load(open(path,encoding='utf-8'))
+              except Exception:
+                  continue
+              if int(d.get('shardIndex',-1)) == shard:
+                  print(path.rsplit('/',1)[-1])
+          PY
+          while IFS= read -r asset; do
+            [ -n "$asset" ] || continue
+            gh release delete-asset "$ASR_RELEASE" "$asset" -y --repo "$GH_REPO" || true
+          done < /tmp/record-assets.txt
+      - name: Upload assembly evidence
         if: always() && matrix.shard >= 0
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: asr-shard-${{ matrix.shard }}
-          path: |
-            asr/asr-shard-*.json
-            asr/asr-checkpoint-*.json
+          name: asr-assembled-shard-${{ matrix.shard }}
+          path: asr/asr-shard-*.json
           if-no-files-found: warn
-          retention-days: 7
-      - name: Enforce complete shard transcription
-        if: matrix.shard >= 0 && steps.asr.outcome == 'failure'
+          retention-days: 14
+      - name: Enforce full shard assembly
+        if: matrix.shard >= 0 && steps.assemble.outcome == 'failure'
         run: exit 1
 
   finalize:
     if: always()
-    needs: [prepare, transcribe]
+    needs: [runtime, prepare, transcribe-normal, transcribe-long, assemble]
     runs-on: ubuntu-24.04
+    container:
+      image: ${{ needs.runtime.outputs.image_ref }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    env:
+      ASR_RUNTIME_IMAGE: ${{ needs.runtime.outputs.image_ref }}
+      ASR_RUNTIME_KEY: ${{ needs.runtime.outputs.runtime_key }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Download persisted canonical shard manifests
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Download canonical and recovery assets
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          mkdir -p downloaded final
+          mkdir -p downloaded recovery-assets final
           gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern 'asr-shard-*.json' --dir downloaded
+          cp downloaded/asr-shard-*.json recovery-assets/ 2>/dev/null || true
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern 'asr-checkpoint-*.json' --dir recovery-assets || true
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern 'asr-record-*.json' --dir recovery-assets || true
+      - name: Refresh recovery-state manifest
+        run: |
+          python scripts/build_asr_recovery_state.py \
+            --inventory public/data/criticism-transcript-inventory.json \
+            --assets recovery-assets \
+            --out final/asr-recovery-state.json \
+            --shard-count "$SHARD_COUNT" \
+            --model "$ASR_MODEL" \
+            --long-threshold-bytes "$LONG_RECORDING_BYTES" \
+            --long-duration-seconds "$LONG_RECORDING_SECONDS"
       - id: merge
-        name: Merge ASR corpus and enforce coverage
+        name: Merge ASR corpus and enforce strict coverage/integrity gate
         continue-on-error: true
         run: |
-          python scripts/merge_criticism_transcripts.py --input downloaded --out final --require-complete
-      - name: Publish per-part transcript datasets and corpus manifest
+          python scripts/merge_criticism_transcripts.py \
+            --input downloaded \
+            --inventory public/data/criticism-transcript-inventory.json \
+            --out final \
+            --require-complete
+      - name: Build confidence-driven human review queue
+        if: always() && hashFiles('final/criticism-transcripts-part-*.json') != ''
+        run: |
+          python scripts/build_asr_review_queue.py \
+            --input final \
+            --out-json final/criticism-human-review-queue.json \
+            --out-csv final/criticism-human-review-queue.csv
+      - name: Publish datasets, manifest, review queue and recovery state
         if: always() && hashFiles('final/criticism-transcript-manifest.json') != ''
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release upload "$ASR_RELEASE" final/criticism-transcripts-part-*.json final/criticism-transcript-manifest.json --clobber --repo "$GH_REPO"
-      - name: Publish completion summary into repository
+        run: |
+          gh release upload "$ASR_RELEASE" \
+            final/criticism-transcripts-part-*.json \
+            final/criticism-transcript-manifest.json \
+            final/criticism-human-review-queue.json \
+            final/criticism-human-review-queue.csv \
+            final/asr-recovery-state.json \
+            --clobber --repo "$GH_REPO"
+      - name: Build immutable preservation snapshot
+        if: steps.merge.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p preservation
+          cp final/criticism-transcripts-part-*.json preservation/
+          cp final/criticism-transcript-manifest.json preservation/
+          cp final/criticism-human-review-queue.json preservation/
+          cp final/criticism-human-review-queue.csv preservation/
+          cp final/asr-recovery-state.json preservation/
+          cp public/data/criticism-transcript-inventory.json preservation/
+          cp requirements-asr.lock preservation/
+          python - <<'PY'
+          import hashlib, json, os, pathlib
+          lock=pathlib.Path('requirements-asr.lock').read_bytes()
+          provenance={
+            'schemaVersion':1,
+            'repository':os.environ['GITHUB_REPOSITORY'],
+            'commit':os.environ['GITHUB_SHA'],
+            'workflowRunId':os.environ['GITHUB_RUN_ID'],
+            'workflowRunAttempt':os.environ['GITHUB_RUN_ATTEMPT'],
+            'runtimeImage':os.environ.get('ASR_RUNTIME_IMAGE',''),
+            'runtimeKey':os.environ.get('ASR_RUNTIME_KEY',''),
+            'requirementsAsrLockSha256':hashlib.sha256(lock).hexdigest(),
+            'actions':{
+              'checkout':'3d3c42e5aac5ba805825da76410c181273ba90b1',
+              'uploadArtifact':'043fb46d1a93c77aae656e7c1c64a875d1fc6a0a'
+            },
+            'claimBoundary':'Machine ASR accessibility aids; humanVerified=false and editorialReview=not-reviewed remain authoritative until human review.'
+          }
+          pathlib.Path('preservation/PROVENANCE.json').write_text(json.dumps(provenance,indent=2),encoding='utf-8')
+          PY
+          cat > preservation/README.txt <<'EOF'
+          Videha Discussion & Criticism — machine ASR preservation snapshot
+
+          This snapshot preserves the canonical machine-ASR accessibility-aid datasets,
+          strict completion manifest, recovery-state manifest, human-review priority queue,
+          canonical source inventory, pinned ASR dependency lock and workflow provenance.
+          Machine transcript drafts are not publisher captions and are not human/editorially
+          verified. The verification fields in the data remain authoritative.
+          EOF
+          (cd preservation && sha256sum * > SHA256SUMS)
+          SNAPSHOT="Videha-criticism-ASR-preservation-${GITHUB_SHA:0:12}.tar.gz"
+          tar -czf "final/$SNAPSHOT" preservation
+          sha256sum "final/$SNAPSHOT" > "final/$SNAPSHOT.sha256"
+          TAG="criticism-corpus-snapshot-${GITHUB_SHA:0:12}"
+          if gh release view "$TAG" --repo "$GH_REPO" >/dev/null 2>&1; then
+            echo "Preservation release $TAG already exists; leaving it immutable."
+          else
+            gh release create "$TAG" --repo "$GH_REPO" --target "$GITHUB_SHA" \
+              --title "Videha criticism ASR preservation snapshot ${GITHUB_SHA:0:12}" \
+              --notes 'Immutable scholarly preservation snapshot of the machine-complete Videha Discussion & Criticism ASR corpus, manifests, provenance, checksums and human-review queue.'
+            gh release upload "$TAG" "final/$SNAPSHOT" "final/$SNAPSHOT.sha256" \
+              final/criticism-transcript-manifest.json final/criticism-human-review-queue.json \
+              final/asr-recovery-state.json --repo "$GH_REPO"
+          fi
+      - name: Publish completion manifest into repository
         if: steps.merge.outcome == 'success'
         run: |
           cp final/criticism-transcript-manifest.json public/data/criticism-transcript-manifest.json
+          cp final/criticism-human-review-queue.json public/data/criticism-human-review-queue.json
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add public/data/criticism-transcript-manifest.json
+          git add public/data/criticism-transcript-manifest.json public/data/criticism-human-review-queue.json
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Publish complete criticism ASR transcript manifest [skip asr]'
+          git commit -m 'Publish complete criticism ASR corpus evidence [skip asr]'
           git push
       - name: Enforce complete corpus
         if: steps.merge.outcome == 'failure'
