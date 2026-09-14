@@ -127,11 +127,12 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       expected: ${{ steps.count.outputs.expected }}
-      matrix: ${{ steps.count.outputs.matrix }}
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      missing: ${{ steps.matrix.outputs.missing }}
     steps:
       - uses: actions/checkout@v4
       - id: count
-        name: Read canonical corpus size and construct shard matrix
+        name: Read canonical corpus size
         run: |
           COUNT=$(python - <<'PY'
           import json
@@ -139,13 +140,7 @@ jobs:
           print(int(d['summary']['canonicalRecordings']))
           PY
           )
-          MATRIX=$(python - <<'PY'
-          import json, os
-          print(json.dumps(list(range(int(os.environ['SHARD_COUNT']))), separators=(',',':')))
-          PY
-          )
           echo "expected=$COUNT" >> "$GITHUB_OUTPUT"
-          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
           test "$COUNT" = '2346'
       - name: Create or retain transcript-draft release
         env:
@@ -158,6 +153,73 @@ jobs:
           else
             gh release create "$ASR_RELEASE" --repo "$GH_REPO" --target "$GITHUB_SHA" --title 'Videha Discussion & Criticism ASR Accessibility Aids' --notes "$NOTES"
           fi
+      - id: matrix
+        name: Validate persisted canonical shards and select only incomplete work
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          mkdir -p persisted
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern 'asr-shard-*.json' --dir persisted || true
+          python - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+
+          shard_count=int(os.environ['SHARD_COUNT'])
+          model=os.environ['ASR_MODEL']
+          inv=json.load(open('public/data/criticism-transcript-inventory.json',encoding='utf-8'))
+          rows=[]
+          for collection in inv.get('collections',[]):
+              part=int(collection['part'])
+              for item in collection.get('canonicalMedia',[]):
+                  rows.append((part,item['logicalSource']))
+          rows.sort(key=lambda row:(row[0],row[1].lower()))
+          assert len(rows) == 2346, len(rows)
+
+          def stable_id(part, logical):
+              return f"p{part:02d}-{hashlib.sha1(f'{part}|{logical}'.encode('utf-8')).hexdigest()[:14]}"
+
+          valid_status={'asr-draft','no-speech-detected'}
+          missing=[]
+          for shard in range(shard_count):
+              selected=[row for i,row in enumerate(rows) if i % shard_count == shard]
+              expected_ids={stable_id(*row) for row in selected}
+              path=Path('persisted') / f'asr-shard-{shard:03d}.json'
+              ok=False
+              if path.exists():
+                  try:
+                      d=json.load(open(path,encoding='utf-8'))
+                      records=d.get('records',[])
+                      ids=[str(r.get('id') or '') for r in records]
+                      ok=(
+                          int(d.get('shardIndex',-1)) == shard
+                          and int(d.get('shardCount',-1)) == shard_count
+                          and int(d.get('canonicalRecordingCount',-1)) == len(rows)
+                          and str(d.get('asrModel') or '') == model
+                          and int(d.get('selectedCount',-1)) == len(selected)
+                          and int(d.get('coveredCount',-1)) == len(selected)
+                          and int(d.get('failureCount',-1)) == 0
+                          and len(records) == len(selected)
+                          and len(set(ids)) == len(selected)
+                          and set(ids) == expected_ids
+                          and all(
+                              r.get('status') in valid_status
+                              and r.get('humanVerified') is False
+                              and r.get('editorialReview') == 'not-reviewed'
+                              for r in records
+                          )
+                      )
+                  except Exception as exc:
+                      print(f'invalid shard {shard}: {type(exc).__name__}: {exc}')
+              if not ok:
+                  missing.append(shard)
+
+          matrix=missing if missing else [-1]
+          print({'persistedComplete': shard_count-len(missing), 'missing': missing, 'matrix': matrix})
+          with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as f:
+              f.write('matrix='+json.dumps(matrix,separators=(',',':'))+'\n')
+              f.write('missing='+json.dumps(missing,separators=(',',':'))+'\n')
+          PY
 
   transcribe:
     needs: prepare
@@ -165,22 +227,39 @@ jobs:
     timeout-minutes: 360
     strategy:
       fail-fast: false
-      max-parallel: 20
+      max-parallel: 4
       matrix:
         shard: ${{ fromJSON(needs.prepare.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
+        if: matrix.shard >= 0
       - uses: actions/setup-python@v5
+        if: matrix.shard >= 0
         with:
           python-version: '3.12'
+      - name: Restore prior shard and durable checkpoint
+        if: matrix.shard >= 0
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          mkdir -p asr
+          PAD=$(printf '%03d' '${{ matrix.shard }}')
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern "asr-shard-$PAD.json" --dir asr || true
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern "asr-checkpoint-$PAD.json" --dir asr || true
       - name: Install ASR dependencies
+        if: matrix.shard >= 0
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends ffmpeg
           python -m pip install --disable-pip-version-check 'faster-whisper>=1.1,<2'
       - id: asr
-        name: Transcribe shard ${{ matrix.shard }}
+        name: Transcribe shard ${{ matrix.shard }} with durable per-recording checkpoints
+        if: matrix.shard >= 0
         continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
           mkdir -p asr
           PAD=$(printf '%03d' '${{ matrix.shard }}')
@@ -189,23 +268,33 @@ jobs:
             --shard-index '${{ matrix.shard }}' \
             --shard-count "$SHARD_COUNT" \
             --model "$ASR_MODEL" \
+            --resume "asr/asr-shard-$PAD.json" \
+            --resume "asr/asr-checkpoint-$PAD.json" \
+            --checkpoint "asr/asr-checkpoint-$PAD.json" \
+            --checkpoint-release "$ASR_RELEASE" \
+            --checkpoint-repo "$GH_REPO" \
             --out "asr/asr-shard-$PAD.json"
-      - name: Persist shard on release
-        if: always() && hashFiles('asr/asr-shard-*.json') != ''
+      - name: Persist only a fully completed canonical shard
+        if: matrix.shard >= 0 && steps.asr.outcome == 'success' && hashFiles('asr/asr-shard-*.json') != ''
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release upload "$ASR_RELEASE" asr/asr-shard-*.json --clobber --repo "$GH_REPO"
+        run: |
+          PAD=$(printf '%03d' '${{ matrix.shard }}')
+          gh release upload "$ASR_RELEASE" "asr/asr-shard-$PAD.json" --clobber --repo "$GH_REPO"
+          gh release delete-asset "$ASR_RELEASE" "asr-checkpoint-$PAD.json" -y --repo "$GH_REPO" || true
       - name: Upload shard evidence
-        if: always()
+        if: always() && matrix.shard >= 0
         uses: actions/upload-artifact@v4
         with:
           name: asr-shard-${{ matrix.shard }}
-          path: asr/asr-shard-*.json
+          path: |
+            asr/asr-shard-*.json
+            asr/asr-checkpoint-*.json
           if-no-files-found: warn
           retention-days: 7
       - name: Enforce complete shard transcription
-        if: steps.asr.outcome == 'failure'
+        if: matrix.shard >= 0 && steps.asr.outcome == 'failure'
         run: exit 1
 
   finalize:
@@ -217,7 +306,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Download persisted shard manifests
+      - name: Download persisted canonical shard manifests
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
