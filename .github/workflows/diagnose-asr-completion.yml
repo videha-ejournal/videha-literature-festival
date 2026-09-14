@@ -1,0 +1,58 @@
+name: Diagnose ASR completion policy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/diagnose-asr-completion.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  ASR_RELEASE: criticism-transcripts-v1
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Diagnose all strict completion predicates without rerunning ASR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p canonical final
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" --pattern 'asr-shard-*.json' --dir canonical
+          echo "canonical shard files: $(find canonical -maxdepth 1 -type f -name 'asr-shard-*.json' | wc -l | tr -d ' ')"
+          python scripts/merge_criticism_transcripts.py \
+            --input canonical \
+            --inventory public/data/criticism-transcript-inventory.json \
+            --out final
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('final/criticism-transcript-manifest.json').read_text(encoding='utf-8'))
+          keys=[
+            'status','records','expectedTotal','coveredRecords','inventoryComplete',
+            'shardsExpected','shardsPresent','missingShards','invalidCanonicalShards',
+            'duplicateStableIds','canonicalMediaUrlCount','inventoryMediaUrlCount',
+            'duplicateCanonicalMediaUrlCount','missingCanonicalMediaUrlCount',
+            'extraCanonicalMediaUrlCount','complete'
+          ]
+          print(json.dumps({k:d.get(k) for k in keys},ensure_ascii=False,indent=2))
+          expected={
+            'records':2346,'expectedTotal':2346,'coveredRecords':2346,
+            'shardsExpected':192,'shardsPresent':192,
+            'missingShards':[],'invalidCanonicalShards':[],'duplicateStableIds':[],
+            'canonicalMediaUrlCount':2346,'inventoryMediaUrlCount':2346,
+            'duplicateCanonicalMediaUrlCount':0,'missingCanonicalMediaUrlCount':0,
+            'extraCanonicalMediaUrlCount':0,'inventoryComplete':True,'complete':True,
+          }
+          failures={k:(d.get(k),v) for k,v in expected.items() if d.get(k)!=v}
+          print('STRICT_FALSE_PREDICATES='+json.dumps(failures,ensure_ascii=False,sort_keys=True))
+          if failures:
+              raise SystemExit(1)
+          PY
