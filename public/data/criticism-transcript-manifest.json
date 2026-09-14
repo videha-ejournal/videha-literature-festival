@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 3,
+  "generated": "2026-09-14T15:17:28.486568+00:00",
+  "releaseTag": "criticism-transcripts-v1",
+  "releaseUrl": "https://github.com/videha-ejournal/videha-literature-festival/releases/tag/criticism-transcripts-v1",
+  "status": "complete-machine-asr-coverage",
+  "complete": true,
+  "records": 2346,
+  "expectedTotal": 2346,
+  "expectedCanonicalRecordings": 2346,
+  "processedRecords": 2346,
+  "coveredRecords": 2346,
+  "statusCounts": {
+    "asr-draft": 2189,
+    "no-speech-detected": 157
+  },
+  "models": [
+    "small"
+  ],
+  "shardsExpected": 192,
+  "shardsPresent": 192,
+  "missingShards": [],
+  "invalidCanonicalShards": [],
+  "duplicateRecordIdCount": 0,
+  "missingRecordIdCount": 0,
+  "extraRecordIdCount": 0,
+  "duplicateCanonicalMediaUrlCount": 0,
+  "missingCanonicalMediaUrlCount": 0,
+  "extraCanonicalMediaUrlCount": 0,
+  "runtimeImages": [
+    "ghcr.io/videha-ejournal/videha-asr@sha256:3632d99fd8209ded64f3bed129c421589a2ed118ea11a58dff3f6b14583922bb"
+  ],
+  "softwareVersionSets": [
+    {
+      "ctranslate2": "4.8.2",
+      "fasterWhisper": "1.2.1",
+      "onnxruntime": "1.30.0",
+      "python": "3.12.11"
+    }
+  ],
+  "sourceMediaIdentity": {
+    "recordsWithSourceBytes": 2346,
+    "recordsWithSourceSha256": 0,
+    "recordsWithDecodedAudioFingerprintSha256": 19
+  },
+  "humanVerified": false,
+  "editorialReview": "not-reviewed",
+  "claimBoundary": "These are machine ASR accessibility aids. Spoken-text records are machine drafts; no-speech records mean the ASR emitted no speech text. Neither state is publisher-caption or human/editorial verification.",
+  "reviewQueueAsset": "criticism-human-review-queue.json",
+  "parts": [
+    {
+      "part": 1,
+      "records": 375,
+      "asrDrafts": 374,
+      "noSpeechDetected": 1,
+      "asset": "criticism-transcripts-part-01.json",
+      "url": "https://github.com/videha-ejournal/videha-literature-festival/releases/download/criticism-transcripts-v1/criticism-transcripts-part-01.json"
+    },
+    {
+      "part": 2,
+      "records": 118,
+      "asrDrafts": 118,
+      "noSpeechDetected": 0,
+      "asset": "criticism-transcripts-part-02.json",
+      "url": "https://github.com/videha-ejournal/videha-literature-festival/releases/download/criticism-transcripts-v1/criticism-transcripts-part-02.json"
+    },
+    {
+      "part": 3,
+      "records": 44,
+      "asrDrafts": 44,
+      "noSpeechDetected": 0,
+      "asset": "criticism-transcripts-part-03.json",
+      "url": "https://github.com/videha-ejournal/videha-literature-festival/releases/download/criticism-transcripts-v1/criticism-transcripts-part-03.json"
+    },
+    {
+      "part": 4,
+      "records": 62,
+      "asrDrafts": 62,
+      "noSpeechDetected": 0,
+      "asset": "criticism-transcripts-part-04.json",
+      "url": "https://github.com/videha-ejournal/videha-literature-festival/releases/download/criticism-transcripts-v1/criticism-transcripts-part-04.json"
+    },
+    {
+      "part": 5,
+      "records": 234,
+      "asrDrafts": 218,
+      "noSpeechDetected": 16,
+      "asset": "criticism-transcripts-part-05.json",
+      "url": "https://github.com/videha-ejournal/videha-literature-festival/releases/download/criticism-transcripts-v1/criticism-transcripts-part-05.json"
+    },
+    {
+      "part": 6,
+      "records": 103,
+      "asrDrafts": 103,
+      "noSpeechDetected": 0,
+      "asset": "criticism-transcripts-part-06.json",
+      "url": "https://github.com/videha-ejournal/videha-literature-festival/releases/download/criticism-transcripts-v1/criticism-transcripts-part-06.json"
+    },
+    {
+      "part": 7,
+      "records": 139,
+      "asrDrafts": 139,
+      "noSpeechDetected": 0,
+      "asset": "criticism-transcripts-part-07.json",
+      "url": "https://github.com/videha-ejournal/videha-literature-festival/releases/download/criticism-transcripts-v1/criticism-transcripts-part-07.json"
+    },
+    {
+      "part": 8,
+      "records": 96,
+      "asrDrafts": 96,
+      "noSpeechDetected": 0,
+      "asset": "criticism-transcripts-part-08.json",
+      "url": "https://github.com/videha-ejournal/videha-literature-festival/releases/download/criticism-transcripts-v1/criticism-transcripts-part-08.json"
+    },
+    {
+      "part": 9,
+      "records": 346,
+      "asrDrafts": 338,
+      "noSpeechDetected": 8,
+      "asset": "criticism-transcripts-part-09.json",
+      "url": "https://github.com/videha-ejournal/videha-literature-festival/releases/download/criticism-transcripts-v1/criticism-transcripts-part-09.json"
+    },
+    {
+      "part": 10,
+      "records": 441,
+      "asrDrafts": 389,
+      "noSpeechDetected": 52,
+      "asset": "criticism-transcripts-part-10.json",
+      "url": "https://github.com/videha-ejournal/videha-literature-festival/releases/download/criticism-transcripts-v1/criticism-transcripts-part-10.json"
+    },
+    {
+      "part": 11,
+      "records": 378,
+      "asrDrafts": 298,
+      "noSpeechDetected": 80,
+      "asset": "criticism-transcripts-part-11.json",
+      "url": "https://github.com/videha-ejournal/videha-literature-festival/releases/download/criticism-transcripts-v1/criticism-transcripts-part-11.json"
+    },
+    {
+      "part": 12,
+      "records": 10,
+      "asrDrafts": 10,
+      "noSpeechDetected": 0,
+      "asset": "criticism-transcripts-part-12.json",
+      "url": "https://github.com/videha-ejournal/videha-literature-festival/releases/download/criticism-transcripts-v1/criticism-transcripts-part-12.json"
+    }
+  ]
+}
