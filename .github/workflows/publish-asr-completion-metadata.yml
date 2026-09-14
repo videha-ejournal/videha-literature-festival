@@ -1,0 +1,103 @@
+name: Publish final ASR completion metadata
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/publish-asr-completion-metadata.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  ASR_RELEASE: criticism-transcripts-v1
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+
+      - name: Download final machine-complete metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p final-metadata
+          gh release download "$ASR_RELEASE" --repo "$GH_REPO" \
+            --pattern 'criticism-transcript-manifest.json' \
+            --pattern 'criticism-human-review-queue.json' \
+            --dir final-metadata
+          test -s final-metadata/criticism-transcript-manifest.json
+          test -s final-metadata/criticism-human-review-queue.json
+
+      - name: Enforce final strict corpus and review-state boundaries
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifest=json.loads(Path('final-metadata/criticism-transcript-manifest.json').read_text(encoding='utf-8'))
+          required={
+              'status':'complete-machine-asr-coverage',
+              'records':2346,
+              'expectedTotal':2346,
+              'coveredRecords':2346,
+              'shardsPresent':192,
+              'shardsExpected':192,
+              'missingShards':[],
+              'invalidCanonicalShards':[],
+              'duplicateCanonicalMediaUrlCount':0,
+              'missingCanonicalMediaUrlCount':0,
+              'extraCanonicalMediaUrlCount':0,
+              'complete':True,
+          }
+          failures={k:(manifest.get(k),v) for k,v in required.items() if manifest.get(k)!=v}
+          assert not failures, failures
+
+          review=json.loads(Path('final-metadata/criticism-human-review-queue.json').read_text(encoding='utf-8'))
+          records=review.get('records') if isinstance(review,dict) else review
+          assert isinstance(records,list), 'review queue records missing'
+          assert len(records)==2346, len(records)
+          for row in records:
+              if 'humanVerified' in row:
+                  assert row['humanVerified'] is False, row.get('id')
+              if 'editorialReview' in row:
+                  assert row['editorialReview']=='not-reviewed', row.get('id')
+          print({
+              'strictMachineCorpus':'passed',
+              'records':manifest['records'],
+              'shards':manifest['shardsPresent'],
+              'complete':manifest['complete'],
+              'humanReviewQueueRecords':len(records),
+              'humanCertificationClaimed':False,
+          })
+          PY
+
+      - name: Publish completion metadata into repository
+        run: |
+          set -euo pipefail
+          mkdir -p public/data
+          cp final-metadata/criticism-transcript-manifest.json public/data/criticism-transcript-manifest.json
+          cp final-metadata/criticism-human-review-queue.json public/data/criticism-human-review-queue.json
+          git config user.name 'videha-ejournal-bot'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/data/criticism-transcript-manifest.json public/data/criticism-human-review-queue.json
+          if git diff --cached --quiet; then
+            echo 'Completion metadata already matches verified release.'
+            exit 0
+          fi
+          git commit -m 'Publish complete criticism ASR corpus metadata'
+          git push origin HEAD:main
+
+      - name: Verify repository copies are byte-identical to release metadata
+        run: |
+          set -euo pipefail
+          cmp final-metadata/criticism-transcript-manifest.json public/data/criticism-transcript-manifest.json
+          cmp final-metadata/criticism-human-review-queue.json public/data/criticism-human-review-queue.json
+          sha256sum public/data/criticism-transcript-manifest.json public/data/criticism-human-review-queue.json
