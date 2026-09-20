@@ -41,7 +41,11 @@ function enhanceArchiveFrame(frame) {
 
 function insertMediaHelp() {
   if (document.getElementById("mediaAccessibilityHelp")) return;
-  const host = document.querySelector("#media, #stages, #reader, main");
+  // Prefer the media section; a selector list picks the earlier <main> instead.
+  const host = document.querySelector("#media")
+    || document.querySelector("#stages")
+    || document.querySelector("#reader")
+    || document.querySelector("main");
   if (!host) return;
   const box = document.createElement("aside");
   box.id = "mediaAccessibilityHelp";
