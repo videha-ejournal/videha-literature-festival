@@ -13,7 +13,7 @@ function translatePatterns(value) {
     [/^Showing (\d+) of (\d+) indexed books and volumes$/, (_, shown, total) => `${shown} / ${total} सूचीबद्ध पोथी आ खण्ड देखाइत अछि`],
     [/^Showing (\d+) of (\d+) publication files$/, (_, shown, total) => `${shown} / ${total} प्रकाशन-फाइल देखाइत अछि`],
     [/^(\d+) source-linked records shown$/, (_, count) => `${count} मूल-स्रोतसँ जुड़ल अभिलेख देखाइत अछि`],
-    [/^Search ([\d,]+) book and study records, 485 Videha–Sadeha files, (\d+) Rangmanch records and (\d+) world programmes\.$/, (_, books, stage, world) => `${books} पोथी आ अध्ययन-अभिलेख, ४८५ विदेह–सदेह फाइल, ${stage} रङ्गमञ्च अभिलेख आ ${world} विश्व कार्यक्रममे खोजू।`],
+    [/^Search ([\d,]+) book and study records, ([\d,]+) Videha–Sadeha files, (\d+) Rangmanch records and (\d+) world programmes\.$/, (_, books, issues, stage, world) => `${books} पोथी आ अध्ययन-अभिलेख, ${issues} विदेह–सदेह फाइल, ${stage} रङ्गमञ्च अभिलेख आ ${world} विश्व कार्यक्रममे खोजू।`],
     [/^Archive data updated (.+)$/, (_, date) => `अभिलेख-सामग्री अद्यतन: ${date}`],
     [/^Playing collection: Part (\d+) of 12$/, (_, part) => `चलि रहल संग्रह: १२ मे भाग ${part}`],
     [/^Open Part (\d+) on Internet Archive ↗$/, (_, part) => `Internet Archive पर भाग ${part} खोलू ↗`],

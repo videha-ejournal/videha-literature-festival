@@ -189,13 +189,16 @@ async function init(){
   }catch{}
   $("#curatedCount").textContent=books.filter(book=>book.source==="curated").length.toLocaleString("en-IN");
   $("#allBookCount").textContent=books.length.toLocaleString("en-IN");
-  $("#searchStatus").textContent=`Search ${books.length.toLocaleString("en-IN")} book and study records, 485 Videha–Sadeha files, ${rangmanchMedia.length} Rangmanch records and $$(".world-program-link").length world programmes.`;
   [...new Set(books.map(b=>b.category))].sort().forEach(c=>$("#bookCategory").insertAdjacentHTML("beforeend",`<option>${c}</option>`));
   renderBooks();
   try{
     const data=await fetch("data/archive.json").then(r=>r.json()); issueRecords=data.archive; $("#videhaCount").textContent=data.archiveMaxVideha; $("#lastUpdated").textContent=`Archive data updated ${new Date(data.generated).toLocaleDateString("en-IN",{dateStyle:"medium"})}`;
     [...new Set(issueRecords.map(x=>x.year).filter(Boolean))].sort((a,b)=>b-a).forEach(y=>$("#issueYear").insertAdjacentHTML("beforeend",`<option>${y}</option>`)); renderIssues();
   }catch(e){$("#issueCount").textContent="Archive index could not be loaded.";}
+  const bookTotal=books.length.toLocaleString("en-IN"), issueTotal=issueRecords.length.toLocaleString("en-IN"), worldTotal=$$(".world-program-link").length;
+  $("#searchStatus").textContent=document.documentElement.lang.startsWith("mai")
+    ? `${bookTotal} पोथी आ अध्ययन-अभिलेख, ${issueTotal} विदेह–सदेह फाइल, ${rangmanchMedia.length} रङ्गमञ्च अभिलेख आ ${worldTotal} विश्व कार्यक्रममे खोजू।`
+    : `Search ${bookTotal} book and study records, ${issueTotal} Videha–Sadeha files, ${rangmanchMedia.length} Rangmanch records and ${worldTotal} world programmes.`;
   const requestedQuery=new URLSearchParams(location.search).get("q");
   if(requestedQuery){$("#globalSearch").value=requestedQuery;globalSearch(requestedQuery);}
 }
@@ -240,6 +243,6 @@ document.addEventListener("click",event=>{
   const issueControl=event.target.closest("[data-issue-publication]");
   if(issueControl){$("#publication").value=issueControl.dataset.issuePublication;renderIssues(true);}
 });
-$(".menu-toggle").addEventListener("click",e=>{const open=$("#primary-nav").classList.toggle("open");e.currentTarget.setAttribute("aria-expanded",open)}); $$("#primary-nav a").forEach(a=>a.addEventListener("click",()=>$("#primary-nav").classList.remove("open")));
+$(".menu-toggle").addEventListener("click",e=>{const open=$("#primary-nav").classList.toggle("open");e.currentTarget.setAttribute("aria-expanded",open)}); $$("#primary-nav a").forEach(a=>a.addEventListener("click",()=>{$("#primary-nav").classList.remove("open");$(".menu-toggle").setAttribute("aria-expanded","false");}));
 window.addEventListener("scroll",()=>$("#toTop").classList.toggle("show",scrollY>700),{passive:true}); $("#toTop").addEventListener("click",()=>scrollTo({top:0,behavior:"smooth"}));
 init();
