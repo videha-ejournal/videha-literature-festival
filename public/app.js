@@ -337,7 +337,7 @@ function setupNext(){
   scope=['books','issues','stages','media','world'].includes(params.get('scope'))?params.get('scope'):'all';
   searchOrder=['title','newest','oldest'].includes(params.get('sort'))?params.get('sort'):'relevance';syncSearchControls();
   $$('[data-scope]').forEach(b=>b.addEventListener('click',()=>{scope=b.dataset.scope;syncSearchControls();globalSearch($('#globalSearch').value);}));
-  $('#searchSort').addEventListener('change',e=>{searchOrder=e.target.value;globalSearch($('#globalSearch').value);});
+  $('#searchSort')?.addEventListener('change',e=>{searchOrder=e.target.value;globalSearch($('#globalSearch').value);});
   $('#clearAll')?.addEventListener('click',clearSearch);$('#closeSearch')?.addEventListener('click',closeResults);
   document.addEventListener('keydown',event=>{
     if($('#searchDialog').hidden)return;
