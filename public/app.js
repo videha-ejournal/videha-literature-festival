@@ -254,6 +254,8 @@ const gajendraDesktopCovers = [
   ["Vyapti_Bilingual_Front_Cover.png", "Vyapti Bilingual"],
   ["Water-Burial_Trilogy_Front_Cover_6x9.png", "Water Burial Trilogy 6x9"]
 ];
+// The canonical Gajendra covers live in the dedicated asset subfolder.
+gajendraDesktopCovers.forEach((cover) => { cover[0] = `gajendra-covers/${cover[0]}`; });
 const covers = [...baseCovers, ...gajendraDesktopCovers];
 
 const videoPlaylists = "https://www.youtube.com/@videha_ejournal/playlists";
