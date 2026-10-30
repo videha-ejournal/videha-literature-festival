@@ -30,7 +30,8 @@ jobs:
         continue-on-error: true
         run: node scripts/update-archive.mjs
       - run: npm run check
-      - run: npm run build || node scripts/build-core.mjs
+      - name: Build deployable static site
+        run: node scripts/build-core.mjs
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
