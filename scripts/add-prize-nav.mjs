@@ -7,7 +7,7 @@ const links = [
   ["Madan Puraskar", "madan-puraskar/", "मदन पुरस्कार"],
   ["Vidyapati Kosh Puraskar", "vidyapati-kosh/", "विद्यापति कोष पुरस्कार"],
   ["Nepal Sajha Prakashan", "nepal-sajha/", "नेपाल साझा प्रकाशन"],
-  ["Other Literary Prizes", "other-prizes/", "आन साहित्यिक पुरस्कार"]
+  ["Other Prizes", "other-prizes/", "आन पुरस्कार"]
 ];
 
 async function files(dir) {
