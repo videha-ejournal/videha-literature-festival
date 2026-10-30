@@ -92,6 +92,16 @@ export async function buildNext({root,out,manifest,stats,githubArchive,byTitle})
     const prefix=locale==='mai'?'mai/':'';
     const relative=prefix+(slug?slug+'/':'');
     const pageUrl=base+relative;
+    if(locale==='mai') {
+      page.querySelector('link[rel="canonical"]').href=pageUrl;
+      page.querySelector('meta[property="og:url"]').content=pageUrl;
+      page.querySelector('meta[property="og:title"]').content='विदेह साहित्य उत्सव';
+      page.querySelector('meta[property="og:description"]').content='मैथिली साहित्य, पोथी, पत्रिका, रंगमंच आ विश्व साहित्यक उत्सव।';
+      page.querySelector('meta[property="og:image"]').content=base+'assets/VIDEHA%20LITERATURE%20FESTIVAL.png';
+      page.querySelector('meta[name="twitter:title"]').content='विदेह साहित्य उत्सव';
+      page.querySelector('meta[name="twitter:description"]').content='मैथिली साहित्य, पोथी, पत्रिका, रंगमंच आ विश्व साहित्यक उत्सव।';
+      for(const a of page.querySelectorAll('a[href="https://videha-ejournal.github.io/gajendra-preeti/en/"]')) a.href='https://videha-ejournal.github.io/gajendra-preeti/';
+    }
     if(slug) {
       const section=page.querySelector(selectors[slug]).outerHTML;
       page.querySelector('main').innerHTML=`<nav class="page-nav"><a href="${base+prefix}">${locale==='mai'?'मुख्य पृष्ठ':'Festival home'}</a>${Object.entries(routes).map(([s,l])=>`<a href="${base+prefix+s}/">${l}</a>`).join('')}</nav><h1 class="page-title">${routes[slug]}</h1>${slug==='issues'?card:''}${section}${slug==='books'?staticBooks:slug==='issues'?staticIssues:''}`;
