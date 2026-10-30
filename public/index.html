@@ -87,8 +87,12 @@
   </header>
 
   <div id="accessPanel" class="panel" hidden aria-label="Accessibility settings">
-    <strong>Reading controls</strong>
-    <button data-access="size">Larger text</button><button data-access="spacing">More spacing</button><button data-access="contrast">High contrast</button><button data-access="reset">Reset</button>
+    <strong>Assistive Tech · Reading controls</strong>
+    <div class="access-group"><span>Text size · <b id="accessSizeValue">100%</b></span><button data-access="smaller" aria-label="Decrease text size">A−</button><button data-access="larger" aria-label="Increase text size">A+</button></div>
+    <div class="access-group"><span>Contrast</span><button data-access="normal">Normal</button><button data-access="dark">Dark</button><button data-access="high">High</button></div>
+    <div class="access-group"><span>Colour</span><button data-access="colour-normal">Normal</button><button data-access="gray">Gray</button><button data-access="invert">Invert</button></div>
+    <div class="access-tools"><button data-access="spacing">Extra spacing</button><button data-access="width">Readable width</button><button data-access="links">Highlight links</button><button data-access="images">Hide images</button><button data-access="motion">Stop motion</button><button data-access="targets">Large targets</button><button data-access="cursor">Large cursor</button><button data-access="reader">Reader view</button><button data-access="reset">Reset accessibility settings</button></div>
+    <a href="accessibility/">Accessibility statement →</a>
   </div>
   <div id="translatePanel" class="panel translate-panel" hidden aria-label="Translate this site">
     <label for="language">Translate this English page with Google Translate</label>
