@@ -1,5 +1,7 @@
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { archiveStats } from "./archive.mjs";
+import { buildNext } from "./vnext.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const source = path.join(root, "public");
@@ -11,6 +13,7 @@ await rm(out, { recursive: true, force: true });
 await mkdir(path.join(source, "data"), { recursive: true });
 
 const manifest = JSON.parse(await readFile(archiveSource, "utf8"));
+const stats = archiveStats(manifest);
 const githubFile = (record) => {
   const pad = String(record.issue).padStart(3, "0");
   if (record.publication === "VIDEHA") return `Videha ${pad}.pdf`;
@@ -26,7 +29,10 @@ await writeFile(
   JSON.stringify({
     generated: manifest.generated,
     currentIssue: manifest.currentIssue,
-    archiveMaxVideha: manifest.archiveMaxVideha,
+    archiveMaxVideha: stats.archiveMaxVideha,
+    currentIssueDate: manifest.currentIssueDate,
+    currentIssueUrl: manifest.currentIssueUrl,
+    stats,
     archiveSadehaDocuments: manifest.archiveSadehaDocuments,
     archive: githubArchive,
     hosts: manifest.hosts,
@@ -70,3 +76,5 @@ const catalogueHtml = `<!doctype html>
 await writeFile(path.join(out, "catalogue.html"), catalogueHtml);
 await writeFile(path.join(out, ".nojekyll"), "");
 console.log(`Built ${githubArchive.length} GitHub archive records, ${uniquePothi.length} Pothi records, ${githubCatalogue.length} GitHub editions, and a static catalogue in ${out}`);
+
+await buildNext({ root, out, manifest, stats, githubArchive, byTitle });

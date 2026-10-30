@@ -8,7 +8,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://videha-ejournal.github.io/videha-literature-festival/">
   <meta property="og:title" content="Videha Literature Festival">
-  <meta property="og:description" content="Explore 1,171 Videha Pothi records, 368 published GitHub editions, 485 Videha–Sadeha files, performance, translation and scholarship.">
+  <meta property="og:description" content="Explore 1,171 Videha Pothi records, 368 published GitHub editions, {{totalFiles}} Videha–Sadeha files, performance, translation and scholarship.">
   <meta property="og:image" content="https://videha-ejournal.github.io/videha-literature-festival/assets/VIDEHA%20LITERATURE%20FESTIVAL.png">
   <meta property="og:image:alt" content="Videha Literature Festival artwork">
   <meta name="twitter:card" content="summary_large_image">
@@ -42,7 +42,7 @@
         "@type": "CollectionPage",
         "name": "Videha and Sadeha periodical archive",
         "url": "https://videha-ejournal.github.io/videha-literature-festival/#issues",
-        "mainEntity": {"@type": "ItemList", "numberOfItems": 485}
+        "mainEntity": {"@type": "ItemList", "numberOfItems": {{totalFiles}}}
       },
       {
         "@type": "CreativeWorkSeries",
@@ -79,7 +79,7 @@
     </nav>
     <div class="utility">
       <button id="listenBtn" type="button"><span lang="mai-Deva">सुनू</span> · Listen</button>
-      <button id="translateBtn" type="button">Translate with AI</button>
+      <button id="translateBtn" type="button">Translate page</button>
       <button id="accessBtn" type="button"><span lang="mai-Deva">सहायक तकनीक</span></button>
     </div>
   </header>
@@ -124,8 +124,8 @@
     </section>
 
     <section class="stats" aria-label="Archive at a glance">
-      <a href="#issues" aria-label="Browse 447 archived Videha issues"><strong id="videhaCount">447</strong><span>archived Videha issues</span><em>Browse issues ↓</em></a>
-      <a href="#issues" data-issue-publication="SADEHA" aria-label="Browse 37 Sadeha issues"><strong>37</strong><span>Sadeha issues</span><em>Browse Sadeha ↓</em></a>
+      <a href="#issues" aria-label="Browse {{videhaIssues}} archived Videha issues"><strong id="videhaCount">{{videhaIssues}}</strong><span>archived Videha issues</span><em>Browse issues ↓</em></a>
+      <a href="#issues" data-issue-publication="SADEHA" aria-label="Browse {{sadehaIssues}} Sadeha issues · {{sadehaFiles}} preserved files"><strong>{{sadehaIssues}}</strong><span>Sadeha issues · {{sadehaFiles}} preserved files</span><em>Browse Sadeha ↓</em></a>
       <a href="#books" data-book-query="Parallel History" aria-label="Find the four Parallel History tomes"><strong>4</strong><span>Parallel History tomes · 100 volumes</span><em>Open series ↓</em></a>
       <a href="#books" data-book-query="Decoding the Panji" aria-label="Find the six Panji volumes"><strong>6</strong><span>Panji volumes</span><em>Open series ↓</em></a>
     </section>
@@ -134,7 +134,7 @@
       <div class="section-heading"><p class="eyebrow">ONE FESTIVAL · FOUR DOORS</p><h2 id="doorsTitle">Choose a way in</h2><p>Everything else is a path within these four spaces.</p></div>
       <div class="door-grid">
         <a href="#books"><span>01</span><h3>Book pavilion</h3><p>Authored, edited and translated works; cumulative series and independent books.</p></a>
-        <a href="#issues"><span>02</span><h3>Periodical archive</h3><p>Videha issues 1–447 plus the current issue, and Sadeha 1–37.</p></a>
+        <a href="#issues"><span>02</span><h3>Periodical archive</h3><p>Videha issues {{videhaRange}} plus the current issue, and {{sadehaIssues}} Sadeha issues.</p></a>
         <a href="#stages"><span>03</span><h3>Festival stages</h3><p>Poetry, theatre, children’s literature, criticism, translation and public thought.</p></a>
         <a href="#reader"><span>04</span><h3>Reading room</h3><p>Listen, translate, enlarge, filter and follow verified publication links.</p></a>
       </div>
@@ -161,6 +161,11 @@
     <section id="books" class="books-section">
       <div class="section-heading split"><div><p class="eyebrow">BOOK PAVILION</p><h2>Gajendra Thakur’s cumulative shelf</h2><p>Series are expanded into individually discoverable volumes, then joined with the books and study editions already published across the Videha GitHub repositories.</p></div><a class="text-link" href="https://www.videha.co.in/gajendra-thakur-samagra.htm">Open Gajendra Thakur Samagra ↗</a></div>
       <div class="cover-rail" id="coverRail" aria-label="Selected book covers"></div>
+      <section class="gajendra-samagra" id="gajendra-samagra" aria-labelledby="gajendraSamagraTitle">
+        <div class="section-heading split"><div><p class="eyebrow">गजेन्द्र ठाकुर समग्र</p><h3 id="gajendraSamagraTitle">Gajendra Thakur Samagra</h3><p>सम्पादक: आशीष अनचिन्हार / गजेन्द्र ठाकुर समग्रक सम्पादकीय · चयनित आ सम्पादित पोथीसभ</p></div><a class="text-link" href="https://videha-ejournal.github.io/videha/gajendra-thakur-samagra.htm#gsc.tab=0" target="_blank" rel="noopener">Open the source shelf ↗</a></div>
+        <p class="gajendra-intro">01 उपन्याससँ 12 अनुवाद धरि—आन भाषासँ मैथिली आ मैथिलीसँ अंग्रेजी—स्थानीय PDF स्रोतसँ पढ़ू वा डाउनलोड करू।</p>
+        <div id="gajendraShelf" class="gajendra-shelf" aria-live="polite"></div>
+      </section>
       <div class="catalogue-title"><p class="eyebrow">VIDEHA POTHI &amp; GITHUB CATALOGUE</p><h3>Browse the verified shelf three ways</h3><p>Use the current listing, arrange titles bookwise, or gather records authorwise. Search and source filters work in every view.</p></div>
       <div class="catalogue-ledger" aria-label="Publication catalogue sources">
         <button class="source-chip active" type="button" data-book-source="all"><strong id="allBookCount">Loading…</strong><span>All verified records</span></button>
@@ -188,7 +193,7 @@
     </section>
 
     <section id="issues" class="issues-section">
-      <div class="section-heading split"><div><p class="eyebrow">PERIODICAL ARCHIVE</p><h2>Every issue, one searchable desk</h2><p>The issue records and dates come from the Videha archive manifest. All 485 preserved files open from the dedicated Videha–Sadeha GitHub repository.</p></div><a class="text-link" href="https://github.com/videha-ejournal/videha-sadeha">Open the source repository ↗</a></div>
+      <div class="section-heading split"><div><p class="eyebrow">PERIODICAL ARCHIVE</p><h2>Every issue, one searchable desk</h2><p>The issue records and dates come from the Videha archive manifest. All {{totalFiles}} preserved files open from the dedicated Videha–Sadeha GitHub repository.</p></div><a class="text-link" href="https://github.com/videha-ejournal/videha-sadeha">Open the source repository ↗</a></div>
       <div class="issue-visual"><img src="assets/videha%20old%20issues.png" alt="Collage of historic Videha issue covers" loading="lazy"><div><strong>2008 → present</strong><span>A living, twice-monthly Maithili record</span></div></div>
       <p class="filter-explainer">The whole-festival search above already queries issue numbers, titles, dates and years. These controls narrow only the periodical desk shown below.</p>
       <div class="filterbar">
@@ -210,11 +215,11 @@
         <article class="stage-card"><p class="eyebrow">YOUNG READERS</p><h3>Shishu Utsav</h3><p>Thirty-seven illustrated novels, stories, quizzes and learning material for younger readers.</p><div class="stage-links"><a href="https://www.videha.co.in/kids.htm" target="_blank" rel="noopener">Children’s programme ↗</a><button type="button" data-book-query="Children">Find children’s books ↓</button><a href="#world-kids">World children’s programmes ↓</a></div></article>
         <article class="stage-card"><p class="eyebrow">TRANSLATION</p><h3>Anuvad Manch</h3><p>Sanskrit philosophical texts, multilingual literary translation and movement between Maithili and English.</p><div class="stage-links"><button type="button" data-book-query="translation">Find translations ↓</button><a href="https://www.youtube.com/@videha-elearning/playlists" target="_blank" rel="noopener">E-learning video ↗</a><a href="#world-translation">World translation programmes ↓</a></div></article>
         <article class="stage-card"><p class="eyebrow">CRITICISM</p><h3>Samiksha Kaksh</h3><p>Author criticism, literary historiography, forgotten writers and arguments about the Maithili canon.</p><div class="stage-links"><a href="#criticismArchive">Play 12-part archive ↓</a><button type="button" data-book-query="Criticism">Find criticism ↓</button><a href="#world-criticism">World critics’ programmes ↓</a></div></article>
-        <article class="stage-card"><p class="eyebrow">PUBLIC MEMORY</p><h3>Archive Assembly</h3><p>Issue-by-issue discovery across 447 archived Videha issues and 37 Sadeha compilations.</p><div class="stage-links"><a href="#issues">Search periodicals ↑</a><a href="https://www.youtube.com/user/ggajendra71/playlists" target="_blank" rel="noopener">Gajendra Thakur video ↗</a><a href="#world-festivals">World festival archives ↓</a></div></article>
+        <article class="stage-card"><p class="eyebrow">PUBLIC MEMORY</p><h3>Archive Assembly</h3><p>Issue-by-issue discovery across {{videhaIssues}} archived Videha issues and {{sadehaIssues}} Sadeha issues · {{sadehaFiles}} preserved files.</p><div class="stage-links"><a href="#issues">Search periodicals ↑</a><a href="https://www.youtube.com/user/ggajendra71/playlists" target="_blank" rel="noopener">Gajendra Thakur video ↗</a><a href="#world-festivals">World festival archives ↓</a></div></article>
       </div>
       <div class="rangmanch-archive" id="rangmanchArchive">
         <div class="rangmanch-heading"><div><p class="eyebrow">RANGMANCH · PERFORMANCE ARCHIVE</p><h3>Watch, read and follow Maithili theatre</h3><p>Named records are carried from Videha’s Audio/Video index. Playlists and individual performances play here; scripts, criticism and theatre organisations open at their supplied sources.</p></div><a href="https://www.videha.co.in/Audio_Video.htm" target="_blank" rel="noopener">View the complete source index ↗</a></div>
-        <div class="rangmanch-player-wrap"><p id="rangmanchPlayerTitle" aria-live="polite">Now selected: Videha Documentary / Drama playlist</p><iframe id="rangmanchPlayer" src="https://www.youtube-nocookie.com/embed/videoseries?list=PLXne1kENT3DE" title="Rangmanch player: Videha Documentary and Drama playlist" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+        <div class="rangmanch-player-wrap"><p id="rangmanchPlayerTitle" aria-live="polite">Now selected: Videha Documentary / Drama playlist</p><iframe id="rangmanchPlayer" data-src="https://www.youtube-nocookie.com/embed/videoseries?list=PLXne1kENT3DE" title="Rangmanch player: Videha Documentary and Drama playlist" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
         <div class="rangmanch-controls" role="group" aria-label="Filter Rangmanch records">
           <button class="active" type="button" data-rangmanch-filter="all" aria-pressed="true">All · 27</button>
           <button type="button" data-rangmanch-filter="Playlists" aria-pressed="false">Playlists · 3</button>
@@ -229,7 +234,7 @@
         <div class="criticism-intro"><p class="eyebrow">SAMIKSHA KAKSH · PLAYABLE ARCHIVE</p><h3>Videha Discussion &amp; Criticism</h3><p>Twelve verified Internet Archive audio/video collections. Choose a part, then select an item within the player.</p><a id="archiveDetailsLink" href="https://archive.org/details/videha-discussion-criticism-part-1" target="_blank" rel="noopener">Open Part 1 on Internet Archive ↗</a></div>
         <div class="archive-player">
           <p id="archivePlayerTitle" aria-live="polite">Playing collection: Part 1 of 12</p>
-          <iframe id="archivePlayer" src="https://archive.org/embed/videha-discussion-criticism-part-1?playlist=1" title="Videha Discussion and Criticism, Part 1 Internet Archive player" loading="lazy" allow="fullscreen" allowfullscreen></iframe>
+          <iframe id="archivePlayer" data-src="https://archive.org/embed/videha-discussion-criticism-part-1?playlist=1" title="Videha Discussion and Criticism, Part 1 Internet Archive player" loading="lazy" allow="fullscreen" allowfullscreen></iframe>
           <nav class="archive-parts" aria-label="Choose a Videha Discussion and Criticism playable collection">
             <button class="active" type="button" data-archive-part="1" aria-pressed="true">Part 1</button>
             <button type="button" data-archive-part="2" aria-pressed="false">Part 2</button>

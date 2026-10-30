@@ -26,6 +26,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Synchronize current issue and archive manifest
+        run: node scripts/update-archive.mjs
       - run: npm run check
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3

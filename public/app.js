@@ -1,3 +1,4 @@
+const archiveMeta = JSON.parse(document.getElementById("archiveMeta").textContent);
 const $ = (q, root = document) => root.querySelector(q);
 const $$ = (q, root = document) => [...root.querySelectorAll(q)];
 const archiveUrl = "https://www.videha.co.in/";
@@ -60,6 +61,37 @@ const suppliedBooks = [
   {title:"विदेह शोध-लेख · अंक १ सँ ४४७ धरि",category:"Research",detail:"Videha research articles from issues 1–447",links:[{label:"Pothi hardback",url:"https://store.pothi.com/book/%E0%A4%97%E0%A4%9C%E0%A4%A8%E0%A4%A6%E0%A4%B0-%E0%A4%A0%E0%A4%95%E0%A4%B0-%E0%A4%B5%E0%A4%A6%E0%A4%B9-%E0%A4%B6%E0%A4%A7-%E0%A4%B2%E0%A4%96-%E0%A4%85%E0%A4%95-%E0%A5%A7-%E0%A4%B8-%E0%A5%AA%E0%A5%AA%E0%A5%AD-%E0%A4%A7%E0%A4%B0/"},{label:"Google Playbook",url:"https://play.google.com/store/books/details?id=k14HEgAAQBAJ"}]},
   {title:"गजेन्द्र ठाकुरक समानान्तर दर्शन",category:"Philosophy",detail:"Gajendra Thakur’s Parallel Philosophy",links:[{label:"Pothi hardback",url:"https://store.pothi.com/book/gajendra-thakur-gajendra-thakurs-parallel-philosophy/"},{label:"Google Playbook",url:"https://play.google.com/store/books/details?id=PQ8IEgAAQBAJ"}]},
 ];
+const gajendraBooks = [
+  {section:"01 · उपन्यास",title:"गोहि सभक बीच जलसमाधि",detail:"Maithili novel · complete teaching edition",file:"Gohi_Sabhak_Beech_Jalsamadhi.pdf"},
+  {section:"01 · उपन्यास",title:"Water-Burial Among the Crocodiles",detail:"English translation · novel",file:"Water_Burial_Among_the_Crocodiles.pdf"},
+  {section:"02 · कथा",title:"Gajendra Thakur Chayanit Katha",detail:"Selected Maithili stories",file:"Gajendra_Thakur_Chayanit_Katha.pdf"},
+  {section:"02 · कथा",title:"Gajendra Thakur · 82 Selected Stories",detail:"Selected stories collection",file:"Gajendra_Thakur_82_Selected_Stories.pdf"},
+  {section:"03 · कविता",title:"Rang-Sangam · Khand 1",detail:"Poetry and stage writing",file:"GAJENDRA_THAKUR_SAMAGRA_RANG_SANGAM.pdf"},
+  {section:"03 · कविता",title:"Rang-Sangam · Khand 2",detail:"Poetry and stage writing",file:"Rang_Sangam_Khand_2.pdf"},
+  {section:"04 · आलोचना",title:"प्रबन्ध · निबन्ध · समालोचना",detail:"Critical and applied studies",file:"GAJENDRA_THAKUR_SAMAGRA_PNS.pdf"},
+  {section:"05 · इतिहास",title:"A Parallel History of Mithila & Maithili Literature",detail:"History collection and reference volumes",file:"VIDEHA_Parallel_History.pdf"},
+  {section:"05 · इतिहास",title:"History of Mithila, Vajji & Anga",detail:"From prehistory to the contemporary period",file:"HISTORY_MITHILA_ANGA_VAJJI.pdf"},
+  {section:"06 · दर्शन",title:"गजेन्द्र ठाकुरक समानान्तर दर्शन",detail:"Parallel Philosophy",file:"GAJENDRA_THAKUR_PARALLEL_PHILOSOPHY.pdf"},
+  {section:"06 · दर्शन",title:"Bhamati · भामती",detail:"Sanskrit into Maithili translation",file:"GAJENDRA_THAKUR_SAMAGRA_Bhamati.pdf"},
+  {section:"06 · दर्शन",title:"Ātmatattvaviveka · आत्मतत्त्वविवेक",detail:"Sanskrit into Maithili translation",file:"GAJENDRA_THAKUR_SAMAGRA_Atmatattvaviveka.pdf"},
+  {section:"06 · दर्शन",title:"Nyāyakusumāñjali · न्यायकुसुमाञ्जलि",detail:"Sanskrit into Maithili translation",file:"GAJENDRA_THAKUR_SAMAGRA_NYAYAKUSUMANJALI.pdf"},
+  {section:"06 · दर्शन",title:"Tattvacintāmaṇi · तत्त्वचिन्तामणि",detail:"Sanskrit into Maithili translation",file:"GAJENDRA_THAKUR_SAMAGRA_Tattvacintamani.pdf"},
+  {section:"07 · भाषा",title:"Maithili–English Thesaurus",detail:"Maithili reference work",file:"GAJENDRA_THAKUR_SAMAGRA_Maithili_English_Thesaurus.pdf"},
+  {section:"07 · भाषा",title:"English–Maithili Thesaurus",detail:"English reference work",file:"GAJENDRA_THAKUR_SAMAGRA_English_Maithili_Thesaurus.pdf"},
+  {section:"08 · रंगमंच",title:"Rang-Sangam · सम्पूर्ण PDF",detail:"Maithili plays and English stage adaptations",file:"GAJENDRA_THAKUR_SAMAGRA_RANG_SANGAM.pdf"},
+  {section:"09 · बाल साहित्य",title:"३७ टा मैथिली बाल उपन्यास",detail:"Children’s novels collection",file:"GAJENDRA_THAKUR_SAMAGRA_37_MAITHILI_CHILDREN_NOVELS.pdf"},
+  {section:"10 · दृश्य-श्रव्य",title:"ए.आइ. सँ वीडियो बनाउ",detail:"AI video self-learning edition",file:"GAJENDRA_THAKUR_SAMAGRA_AI_VIDEO.pdf"},
+  {section:"10 · दृश्य-श्रव्य",title:"मैथिली रेडियो नाटक",detail:"Radio drama self-learning guide",file:"GAJENDRA_THAKUR_SAMAGRA_MAITHILI_RADIO_NATAK.pdf"},
+  {section:"11 · समग्र सम्पादकीय",title:"गजेन्द्र ठाकुर समग्रक सम्पादकीय",detail:"Editorial and selected works",file:"Gajendra_Thakur_Samagra_Sampadakiya.pdf"},
+  {section:"12 · अनुवाद",title:"संस्कृत साहित्य · 13 books in Maithili translation",detail:"Thirteen translated literary works",file:"GAJENDRA_THAKUR_SAMAGRA_Sanskrit_Sahitya_13_Books.pdf"},
+  {section:"12 · अनुवाद",title:"गजेन्द्र ठाकुर समग्र · अनुवाद खण्ड",detail:"Other-language to Maithili and Maithili to English translations",file:"GAJENDRA_THAKUR_SAMAGRA_ANUVAD_KHAND.pdf"},
+  {section:"12 · अनुवाद",title:"विदेह–सदेह 1–37",detail:"Selected and edited periodical archive",file:"GAJENDRA_THAKUR_SAMAGRA_Videha_Sadeha_1-37.pdf"},
+];
+const gajendraPdf = file => `https://raw.githubusercontent.com/videha-ejournal/videha-ejournal/main/${encodeURIComponent(file)}`;
+function renderGajendraShelf(){
+  const groups=[...new Set(gajendraBooks.map(book=>book.section))];
+  $("#gajendraShelf").innerHTML=groups.map(section=>`<section class="gajendra-group" aria-labelledby="gajendra-${section.slice(0,2)}"><h4 id="gajendra-${section.slice(0,2)}">${section}</h4><div class="gajendra-grid">${gajendraBooks.filter(book=>book.section===section).map(book=>`<article class="gajendra-card"><h5${languageAttribute(book.title)}>${escapeHTML(book.title)}</h5><p>${escapeHTML(book.detail)}</p><a href="${gajendraPdf(book.file)}" target="_blank" rel="noopener" download>Read PDF ↗</a></article>`).join("")}</div></section>`).join("");
+}
 suppliedBooks.forEach((book)=>books.push({...book,url:book.links[0].url}));
 childTitles.forEach((title, i) => books.push({ title, category: "Children’s literature", detail: `Illustrated Maithili children’s novel ${i + 1} of 37`, url: "https://archive.org/download/videha-petar-2/37_MAITHILI%20NOVELS.pdf" }));
 playTitles.forEach(title => books.push({ title, category: "Theatre", detail: "Maithili and English illustrated stage-play editions", url: "https://www.videha.co.in/Audio_Video.htm" }));
@@ -112,7 +144,7 @@ const stages = [
   {title:"Shishu Utsav", kicker:"YOUNG READERS", text:"Thirty-seven illustrated novels, stories, quizzes and learning material for children and adolescents.", links:[{label:"Children’s programme",url:"https://www.videha.co.in/kids.htm"},{label:"Find children’s books",query:"Children"},{label:"Videha E-learning video",url:elearningPlaylists}]},
   {title:"Anuvad Manch", kicker:"TRANSLATION", text:"Sanskrit philosophical texts, multilingual literary translation and movement between Maithili and English.", links:[{label:"Find translations",query:"translation"},{label:"Browse Pothi records",source:"pothi"},{label:"Videha E-learning video",url:elearningPlaylists}]},
   {title:"Samiksha Kaksh", kicker:"CRITICISM", text:"Author criticism, literary historiography, forgotten writers and arguments about the Maithili canon.", links:[{label:"Discussion archive · 12 parts",url:"#criticismArchive"},{label:"Find criticism",query:"Criticism"},{label:"Find Parallel History",query:"Parallel History"}]},
-  {title:"Archive Assembly", kicker:"PUBLIC MEMORY", text:"Issue-by-issue discovery across 447 archived Videha issues and 37 Sadeha compilations.", links:[{label:"Search periodicals",url:"#issues"},{label:"Videha eJournal video",url:videoPlaylists},{label:"Gajendra Thakur video",url:gajendraPlaylists},{label:"Accessible Videha",url:accessiblePlaylists}]},
+  {title:"Archive Assembly", kicker:"PUBLIC MEMORY", text:"Issue-by-issue discovery across the preserved Videha and Sadeha archive.", links:[{label:"Search periodicals",url:"#issues"},{label:"Videha eJournal video",url:videoPlaylists},{label:"Gajendra Thakur video",url:gajendraPlaylists},{label:"Accessible Videha",url:accessiblePlaylists}]},
 ];
 
 let issueRecords = [];
@@ -121,7 +153,7 @@ let issueLimit = 30;
 let currentBookSource = "all";
 let currentBookView = "shelf";
 
-function renderCovers(){ $("#coverRail").innerHTML = covers.map(([src,title]) => `<article class="cover-card"><img src="assets/${encodeURI(src)}" alt="Book cover: ${title}" loading="lazy"><span>${title}</span></article>`).join(""); }
+function renderCovers(){ $("#coverRail").innerHTML = covers.map(([src,title]) => `<article class="cover-card"><img src="${new URL("assets/"+encodeURI(src),import.meta.url)}" alt="Book cover: ${title}" loading="lazy"><span>${title}</span></article>`).join(""); }
 function renderRangmanch(group="all"){
   const records=group==="all"?rangmanchMedia:rangmanchMedia.filter(item=>item.group===group);
   $("#rangmanchCount").textContent=`${records.length} source-linked records shown`;
@@ -147,7 +179,8 @@ function renderIssues(reset=false){
   if(reset) issueLimit=30;
   const q=$("#issueSearch").value.trim().toLowerCase(), pub=$("#publication").value, year=$("#issueYear").value;
   const matches=issueRecords.filter(x=>(pub==="all"||x.publication===pub)&&(year==="all"||String(x.year)===year)&&(!q||`${x.issue} ${x.title} ${x.date||""} ${x.year||""}`.toLowerCase().includes(q))).sort((a,b)=>b.issue-a.issue);
-  $("#issueCount").textContent=`Showing ${Math.min(issueLimit,matches.length)} of ${matches.length} publication files`;
+  const publicationLabel = pub === "VIDEHA" ? "archived Videha files" : pub === "SADEHA" ? "preserved Sadeha files" : "preserved publication files";
+  $("#issueCount").textContent=`Showing ${Math.min(issueLimit,matches.length)} of ${matches.length} ${publicationLabel}`;
   $("#issueGrid").innerHTML=matches.slice(0,issueLimit).map(x=>`<article class="issue-card"><span class="issue-no">${x.publication} · ${x.issue}${x.version?` · VERSION ${x.version}`:""}</span><h3>${x.title}</h3>${x.date?`<time datetime="${x.dateISO||""}">${x.date}</time>`:""}<a href="${x.source}" target="_blank" rel="noopener">Read archived issue ↗</a></article>`).join("") || "<p>No issues match those filters.</p>";
   $("#moreIssues").hidden=issueLimit>=matches.length;
 }
@@ -160,8 +193,8 @@ function listen(text){
   const chosen=(text||window.getSelection()?.toString()||"").trim() || $(".hero-copy .dek").textContent;
   const u=new SpeechSynthesisUtterance(chosen); u.lang=/[\u0900-\u097F]/.test(chosen)?"hi-IN":"en-IN"; speechSynthesis.speak(u);
 }
-function openTranslate(){ const lang=$("#language").value; const url=`https://translate.google.com/translate?sl=en&tl=${encodeURIComponent(lang)}&u=${encodeURIComponent(location.href)}`; window.open(url,"_blank","noopener"); }
-function globalSearch(q){
+function openTranslate(){ const lang=$("#language").value; const url=`https://translate.google.com/translate?sl=${document.documentElement.lang}&tl=${encodeURIComponent(lang)}&u=${encodeURIComponent(location.href)}`; window.open(url,"_blank","noopener"); }
+function legacyGlobalSearch(q){
   q=q.trim().toLowerCase(); if(!q)return;
   const foundBooks=books.filter(b=>`${b.title} ${b.category} ${b.detail} ${b.author||""}`.toLowerCase().includes(q)).slice(0,60);
   const foundIssues=issueRecords.filter(x=>`${x.publication} ${x.issue} ${x.title} ${x.date||""} ${x.year||""}`.toLowerCase().includes(q)).slice(0,60);
@@ -174,33 +207,31 @@ function globalSearch(q){
   $("#searchDialog").hidden=false; document.body.style.overflow="hidden"; $("#closeSearch").focus();
 }
 
-async function init(){
-  renderCovers(); renderRangmanch();
-  Object.entries(langs).forEach(([code,name])=>$("#language").insertAdjacentHTML("beforeend",`<option value="${code}">${name}</option>`));
+let initPromise;
+function init(){ return initPromise ||= loadData(); }
+async function loadData(){
+  renderCovers(); renderRangmanch(); renderGajendraShelf();
+
   try{
-    const pothi=await fetch("data/pothi.json").then(r=>r.json());
+    const pothi=await fetch(new URL("data/pothi.json", import.meta.url)).then(r=>r.json());
     pothi.forEach(x=>{const category=/गजेन्द्र ठाकुर|Gajendra Thakur/i.test(x.author)?"Gajendra Thakur archive":"Videha Pothi";books.push({title:x.title,category,detail:x.author||"Videha Pothi archive record",author:x.author||"Author not stated in source catalogue",url:x.url||"https://www.videha.co.in/pothi.htm",source:"pothi"});});
     $("#pothiCount").textContent=pothi.length.toLocaleString("en-IN");
   }catch{}
   try{
-    const githubBooks=await fetch("data/github-library.json").then(r=>r.json());
+    const githubBooks=await fetch(new URL("data/github-library.json", import.meta.url)).then(r=>r.json());
     githubBooks.forEach(x=>books.push({...x,author:"GitHub catalogue · author not encoded",source:"github"}));
     $("#githubCount").textContent=githubBooks.length.toLocaleString("en-IN");
   }catch{}
   $("#curatedCount").textContent=books.filter(book=>book.source==="curated").length.toLocaleString("en-IN");
   $("#allBookCount").textContent=books.length.toLocaleString("en-IN");
+  $("#searchStatus").textContent=`Search ${books.length.toLocaleString("en-IN")} book and study records, ${archiveMeta.stats.totalFiles} Videha–Sadeha files, ${rangmanchMedia.length} Rangmanch records and ${$$(".world-program-link").length} world programmes.`;
   [...new Set(books.map(b=>b.category))].sort().forEach(c=>$("#bookCategory").insertAdjacentHTML("beforeend",`<option>${c}</option>`));
   renderBooks();
   try{
-    const data=await fetch("data/archive.json").then(r=>r.json()); issueRecords=data.archive; $("#videhaCount").textContent=data.archiveMaxVideha; $("#lastUpdated").textContent=`Archive data updated ${new Date(data.generated).toLocaleDateString("en-IN",{dateStyle:"medium"})}`;
+    const data=await fetch(new URL("data/archive.json", import.meta.url)).then(r=>r.json()); issueRecords=data.archive; $("#videhaCount").textContent=data.stats.videhaIssues; $("#lastUpdated").textContent=`Archive data updated ${new Date(data.generated).toLocaleDateString("en-IN",{dateStyle:"medium"})}`;
     [...new Set(issueRecords.map(x=>x.year).filter(Boolean))].sort((a,b)=>b-a).forEach(y=>$("#issueYear").insertAdjacentHTML("beforeend",`<option>${y}</option>`)); renderIssues();
   }catch(e){$("#issueCount").textContent="Archive index could not be loaded.";}
-  const bookTotal=books.length.toLocaleString("en-IN"), issueTotal=issueRecords.length.toLocaleString("en-IN"), worldTotal=$$(".world-program-link").length;
-  $("#searchStatus").textContent=document.documentElement.lang.startsWith("mai")
-    ? `${bookTotal} पोथी आ अध्ययन-अभिलेख, ${issueTotal} विदेह–सदेह फाइल, ${rangmanchMedia.length} रङ्गमञ्च अभिलेख आ ${worldTotal} विश्व कार्यक्रममे खोजू।`
-    : `Search ${bookTotal} book and study records, ${issueTotal} Videha–Sadeha files, ${rangmanchMedia.length} Rangmanch records and ${worldTotal} world programmes.`;
-  const requestedQuery=new URLSearchParams(location.search).get("q");
-  if(requestedQuery){$("#globalSearch").value=requestedQuery;globalSearch(requestedQuery);}
+
 }
 
 $("#bookSearch").addEventListener("input",()=>renderBooks(true)); $("#bookCategory").addEventListener("change",()=>renderBooks(true)); $("#clearBooks").addEventListener("click",()=>{$("#bookSearch").value="";$("#bookCategory").value="all";renderBooks(true)}); $("#moreBooks").addEventListener("click",()=>{bookLimit+=24;renderBooks()});
@@ -227,7 +258,7 @@ $("#rangmanchGrid").addEventListener("click",event=>{
   $("#rangmanchPlayer").src=isPlaylist?`https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(control.dataset.rangmanchId)}`:`https://www.youtube-nocookie.com/embed/${encodeURIComponent(control.dataset.rangmanchId)}`;
   $("#rangmanchPlayer").title=`Rangmanch player: ${control.dataset.rangmanchTitle}`;
   $("#rangmanchPlayerTitle").textContent=`Now selected: ${control.dataset.rangmanchTitle}`;
-  $("#rangmanchPlayer").scrollIntoView({behavior:"smooth",block:"center"});
+  $("#rangmanchPlayer").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth",block:"center"});
 });
 $("#issueSearch").addEventListener("input",()=>renderIssues(true)); $("#publication").addEventListener("change",()=>renderIssues(true)); $("#issueYear").addEventListener("change",()=>renderIssues(true)); $("#moreIssues").addEventListener("click",()=>{issueLimit+=30;renderIssues()});
 $("#globalSearchForm").addEventListener("submit",e=>{e.preventDefault();globalSearch($("#globalSearch").value)}); $("#closeSearch").addEventListener("click",()=>{$("#searchDialog").hidden=true;document.body.style.overflow=""});
@@ -237,12 +268,91 @@ $("#accessBtn").addEventListener("click",()=>togglePanel("#accessPanel"));
 $("#accessPanel").addEventListener("click",e=>{const a=e.target.dataset.access;if(!a)return;if(a==="size")document.body.classList.toggle("large");if(a==="spacing")document.body.classList.toggle("spacious");if(a==="contrast")document.body.classList.toggle("contrast");if(a==="reset")document.body.className="";});
 document.addEventListener("click",event=>{
   const queryControl=event.target.closest("[data-book-query]");
-  if(queryControl){event.preventDefault();currentBookSource="all";$$('[data-book-source]').forEach(item=>item.classList.toggle("active",item.dataset.bookSource==="all"));$("#bookSearch").value=queryControl.dataset.bookQuery;$("#bookCategory").value="all";renderBooks(true);$("#books").scrollIntoView({behavior:"smooth"});return;}
+  if(queryControl){event.preventDefault();currentBookSource="all";$$('[data-book-source]').forEach(item=>item.classList.toggle("active",item.dataset.bookSource==="all"));$("#bookSearch").value=queryControl.dataset.bookQuery;$("#bookCategory").value="all";renderBooks(true);$("#books").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});return;}
   const sourceControl=event.target.closest("[data-book-source-jump]");
-  if(sourceControl){event.preventDefault();currentBookSource=sourceControl.dataset.bookSourceJump;$$('[data-book-source]').forEach(item=>item.classList.toggle("active",item.dataset.bookSource===currentBookSource));$("#bookSearch").value="";$("#bookCategory").value="all";renderBooks(true);$("#books").scrollIntoView({behavior:"smooth"});return;}
+  if(sourceControl){event.preventDefault();currentBookSource=sourceControl.dataset.bookSourceJump;$$('[data-book-source]').forEach(item=>item.classList.toggle("active",item.dataset.bookSource===currentBookSource));$("#bookSearch").value="";$("#bookCategory").value="all";renderBooks(true);$("#books").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});return;}
   const issueControl=event.target.closest("[data-issue-publication]");
   if(issueControl){$("#publication").value=issueControl.dataset.issuePublication;renderIssues(true);}
 });
-$(".menu-toggle").addEventListener("click",e=>{const open=$("#primary-nav").classList.toggle("open");e.currentTarget.setAttribute("aria-expanded",open)}); $$("#primary-nav a").forEach(a=>a.addEventListener("click",()=>{$("#primary-nav").classList.remove("open");$(".menu-toggle").setAttribute("aria-expanded","false");}));
-window.addEventListener("scroll",()=>$("#toTop").classList.toggle("show",scrollY>700),{passive:true}); $("#toTop").addEventListener("click",()=>scrollTo({top:0,behavior:"smooth"}));
-init();
+$(".menu-toggle").addEventListener("click",e=>{const open=$("#primary-nav").classList.toggle("open");e.currentTarget.setAttribute("aria-expanded",open)}); $$("#primary-nav a").forEach(a=>a.addEventListener("click",()=>$("#primary-nav").classList.remove("open")));
+window.addEventListener("scroll",()=>$("#toTop").classList.toggle("show",scrollY>700),{passive:true}); $("#toTop").addEventListener("click",()=>scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"}));
+
+function normalize(value='') {
+  let text=String(value).normalize('NFKD').replace(/\p{M}/gu,'').toLowerCase().replace(/[०-९]/g,n=>'०१२३४५६७८९'.indexOf(n));
+  const aliases={'पंजी':'panji','विद्यापति':'vidyapati','विदेह':'videha','सदेह':'sadeha','कन्यादान':'kanyadaan','kanyadan':'kanyadaan','अंक':'issue','गजेन्द्र':'gajendra','ठाकुर':'thakur','नाटक':'theatre','कविता':'poetry'};
+  for(const [from,to] of Object.entries(aliases))text=text.replaceAll(from.normalize('NFKD').replace(/\p{M}/gu,''),to);
+  return text.replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+}
+let scope='all', searchOrder='relevance', searchLimit=60, searchOpener, searchTicket=0;
+function searchRecords(){
+  return [...books.map(b=>({scope:'books',title:b.title,desc:`${b.category} · ${b.detail} · ${b.author||''}`,url:b.url})),
+    ...issueRecords.map(r=>({scope:'issues',title:r.title,desc:`${r.publication} issue ${r.issue} ${r.date||''} ${r.year||''}`,url:r.source,issue:r.issue})),
+    {scope:'issues',title:`Current Videha Issue ${archiveMeta.currentIssue}`,desc:archiveMeta.currentIssueDate,url:archiveMeta.currentIssueUrl,issue:archiveMeta.currentIssue},
+    ...stages.map(s=>({scope:'stages',title:s.title,desc:s.kicker+' '+s.text,url:s.links[0].url||'#stages'})),
+    ...rangmanchMedia.map(m=>({scope:'media',title:m.title,desc:m.group,url:m.url})),
+    ...$$('.world-program-link').map(a=>({scope:'world',title:a.querySelector('b')?.textContent||a.textContent,desc:a.textContent+' '+a.dataset.genre,url:a.href}))];
+}
+function closeResults(){
+  $('#searchDialog').hidden=true;document.body.style.overflow='';
+  $$('body > [inert]').forEach(el=>el.inert=false);
+  if(searchOpener?.isConnected)searchOpener.focus();
+}
+async function globalSearch(query, reset=true){
+  const ticket=++searchTicket;
+  if($('#searchDialog').hidden)searchOpener=document.activeElement;
+  $('#searchStatus').textContent=document.documentElement.lang==='mai'?'खोज तैयार भऽ रहल अछि…':'Loading search records…';
+  await init();if(ticket!==searchTicket)return;
+  if(reset)searchLimit=60;
+  const q=normalize(query), words=q.split(' ').filter(Boolean);
+  const matches=searchRecords().filter(r=>words.every(w=>normalize(r.title+' '+r.desc).includes(w)));
+  $$('[data-scope-count]').forEach(el=>el.textContent=`(${matches.filter(r=>el.dataset.scopeCount==='all'||r.scope===el.dataset.scopeCount).length})`);
+  const results=matches.filter(r=>scope==='all'||r.scope===scope);
+  results.sort((a,b)=>searchOrder==='title'?a.title.localeCompare(b.title,['mai','en'],{numeric:true}):['newest','oldest'].includes(searchOrder)?(a.issue==null)-(b.issue==null)||((a.issue||0)-(b.issue||0))*(searchOrder==='newest'?-1:1):Number(normalize(b.title).includes(q))-Number(normalize(a.title).includes(q)));
+  const url=new URL(location.href);query.trim()?url.searchParams.set('q',query.trim()):url.searchParams.delete('q');scope==='all'?url.searchParams.delete('scope'):url.searchParams.set('scope',scope);searchOrder==='relevance'?url.searchParams.delete('sort'):url.searchParams.set('sort',searchOrder);history.replaceState(null,'',url);
+  const mai=document.documentElement.lang==='mai';
+  $('#searchDialogTitle').textContent=mai?`${results.length} परिणाम`:`${results.length} results${query?' for “'+query+'”':''}`;
+  $('#searchStatus').textContent=mai?`${results.length} परिणाम`:`${results.length} matching records · ${scope}`;
+  $('#searchResults').innerHTML=`<div class="search-scopes"><label>${mai?'खोजक क्षेत्र':'Scope'} <select id="dialogScope">${['all','books','issues','stages','media','world'].map((s,i)=>`<option value="${s}" ${s===scope?'selected':''}>${mai?['सभ','पोथी','अंक','मंच','दृश्य-श्रव्य','विश्व संवाद'][i]:s} (${matches.filter(r=>s==='all'||r.scope===s).length})</option>`).join('')}</select></label><label>${mai?'क्रम':'Sort'} <select id="dialogSort">${['relevance','title','newest','oldest'].map((s,i)=>`<option value="${s}" ${s===searchOrder?'selected':''}>${mai?['प्रासंगिकता','शीर्षक','नव अंक पहिने','पुरान अंक पहिने'][i]:s}</option>`).join('')}</select></label><button id="dialogClear">${mai?'सभ हटाउ':'Clear all'}</button></div><p>${mai?'देखाओल परिणाम':'Showing'} ${Math.min(results.length,searchLimit)} / ${results.length}</p>`+
+    results.slice(0,searchLimit).map(r=>`<article class="search-result"><span class="kind">${escapeHTML(r.scope)}</span><div><h3${languageAttribute(r.title)}>${escapeHTML(r.title)}</h3><p>${escapeHTML(r.desc)}</p></div><a href="${escapeHTML(r.url)}">${mai?'खोलू':'Open'} →</a></article>`).join('')+(results.length>searchLimit?`<button id="moreSearch">${mai?'आओर परिणाम':'Show more results'}</button>`:'');
+  $('#dialogScope').onchange=e=>{scope=e.target.value;syncSearchControls();globalSearch(query);};
+  $('#dialogSort').onchange=e=>{searchOrder=e.target.value;syncSearchControls();globalSearch(query);};
+  $('#dialogClear').onclick=clearSearch;
+  $('#moreSearch')?.addEventListener('click',()=>{searchLimit+=60;globalSearch(query,false);});
+  const opening=$('#searchDialog').hidden;
+  $('#searchDialog').hidden=false;document.body.style.overflow='hidden';
+  $$('body > *').filter(el=>!['SCRIPT','STYLE'].includes(el.tagName)&&el.id!=='searchDialog').forEach(el=>el.inert=true);
+  if(opening)$('#closeSearch').focus();else $('#dialogScope').focus();
+}
+function syncSearchControls(){
+  $$('[data-scope]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.scope===scope));$('#searchSort').value=searchOrder;
+}
+function clearSearch(){
+  searchTicket++;scope='all';searchOrder='relevance';$('#globalSearch').value='';syncSearchControls();closeResults();
+  const url=new URL(location.href);['q','scope','sort'].forEach(k=>url.searchParams.delete(k));history.replaceState(null,'',url);
+  $('#searchStatus').textContent=document.documentElement.lang==='mai'?'नव खोज शुरू करू।':'Search cleared. Choose a scope or enter a new search.';
+  $$('[data-scope-count]').forEach(el=>el.textContent='');$('#globalSearch').focus();
+}
+function setupNext(){
+  const params=new URLSearchParams(location.search);
+  scope=['books','issues','stages','media','world'].includes(params.get('scope'))?params.get('scope'):'all';
+  searchOrder=['title','newest','oldest'].includes(params.get('sort'))?params.get('sort'):'relevance';syncSearchControls();
+  $$('[data-scope]').forEach(b=>b.addEventListener('click',()=>{scope=b.dataset.scope;syncSearchControls();globalSearch($('#globalSearch').value);}));
+  $('#searchSort').addEventListener('change',e=>{searchOrder=e.target.value;globalSearch($('#globalSearch').value);});
+  $('#clearAll').addEventListener('click',clearSearch);$('#closeSearch').addEventListener('click',closeResults);
+  document.addEventListener('keydown',event=>{
+    if($('#searchDialog').hidden)return;
+    if(event.key==='Escape'){event.preventDefault();closeResults();}
+    if(event.key==='Tab'){
+      const controls=$$('a[href],button,select,input,[tabindex="0"]',$('#searchDialog')).filter(el=>!el.hidden&&!el.disabled);
+      const first=controls[0],last=controls.at(-1);
+      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+      else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+    }
+  });
+  document.addEventListener('toggle',e=>{if(e.target.open && e.target.querySelector?.('#books,#issues,#stages'))init();},true);
+  document.addEventListener('focusin',e=>{if(e.target.closest('#books,#issues'))init();});
+  if(params.has('q')||params.has('scope')){$('#globalSearch').value=params.get('q')||'';globalSearch($('#globalSearch').value);}
+  else if(['#books','#issues'].includes(location.hash))init();
+}
+
+setupNext();
