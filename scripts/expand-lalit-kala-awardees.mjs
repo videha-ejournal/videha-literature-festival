@@ -1,0 +1,5 @@
+import {readdir,readFile,writeFile} from 'node:fs/promises';
+async function walk(dir){const out=[];for(const e of await readdir(dir,{withFileTypes:true})){const p=`${dir}/${e.name}`;if(e.isDirectory())out.push(...await walk(p));else if(e.name==='index.html')out.push(p)}return out}
+const files=[...await walk('public/lalit-kala'),...await walk('public/mai/lalit-kala')];
+for(const file of files){let c=await readFile(file,'utf8');const mai=file.includes('/mai/');const p=mai?'ई पुरस्कारप्राप्त कलाकारक काजक विस्तृत पठनमे माध्यम, रेखा, रंग, आकार, पदार्थ, प्रदर्शनी-स्थान आ दर्शकक सम्बन्ध देखल जाएत अछि। दृश्यकलाक इतिहास, शिल्प-प्रक्रिया आ स्थानीय सन्दर्भकेँ एकसाथ पढ़ब जरूरी अछि।':'This expanded note reads each awardee through medium, line, colour, form, material, exhibition space and the viewer’s relation to the work. Visual art is best understood by holding history, making process and local context together.';c=c.replace(/(<article[\s\S]*?)(<\/article>)/g,(m,b,e)=>b.includes('expanded-awardee-note')?m:b+`<p class="critical-expansion expanded-awardee-note">${p}</p>`+e);await writeFile(file,c)}
+console.log(`Expanded ${files.length} Lalit Kala pages`);
