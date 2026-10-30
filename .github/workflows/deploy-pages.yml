@@ -33,9 +33,11 @@ jobs:
       - name: Build deployable static site
         continue-on-error: true
         run: node scripts/build-core.mjs
+      - name: Verify Pages directory
+        run: test -f dist/index.html && test -f dist/mai/index.html && find dist -type f | wc -l
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: ${{ github.workspace }}/dist
   deploy:
     if: github.event_name != 'pull_request'
     environment:
