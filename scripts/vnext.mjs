@@ -27,9 +27,9 @@ const translations = {
   'Close search':'खोज बन्द करू','Skip to festival':'मुख्य सामग्रीपर जाउ','Back to top ↑':'ऊपर जाउ ↑','archived Videha issues':'संरक्षित विदेह अंक','Browse issues ↓':'अंक देखू ↓','Browse Sadeha ↓':'सदेह देखू ↓',
   'Permanent festival pages':'उत्सवक स्थायी पृष्ठ','Open full page →':'पूरा पृष्ठ खोलू →','Explore this section':'ई खण्ड देखू','English':'English',
   'Search titles and series':'पोथी आ शृंखला ताकू','Filter this issue desk':'अंक छाँटू','Try Panji, Vidyapati, issue 307, Kanyadaan…':'पंजी, विद्यापति, अंक ३०७, कन्यादान…',
-  'Translate this English page with Google Translate':'अन्य भाषामे पढ़बाक लेल गूगल अनुवाद चुनू','Translate this site':'ई साइटक अनुवाद','Accessibility settings':'पढ़बाक सुविधाक विन्यास'
+  'Translate this English page with Google Translate':'अन्य भाषामे पढ़बाक लेल गूगल अनुवाद चुनू','Translate this site':'ई साइटक अनुवाद','Accessibility settings':'पढ़बाक सुविधाक विन्यास','Copy citation':'उद्धरण कॉपी','Citation copied':'उद्धरण कॉपी भेल'
 };
-function translate(document) {
+export function translate(document) {
   const walk = node => {
     if (['SCRIPT','STYLE'].includes(node.tagName)) return;
     if (node.nodeType === 3) { const text=node.textContent.trim(); let translated=translations[text];
