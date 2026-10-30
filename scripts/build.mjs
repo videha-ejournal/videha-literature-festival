@@ -57,6 +57,17 @@ const uniquePothi = [...new Map(pothi.map((item) => [`${item.author}|${item.titl
 await writeFile(path.join(source, "data", "pothi.json"), JSON.stringify(uniquePothi));
 
 await cp(source, out, { recursive: true });
+const augmentGajendraApp = async () => {
+  const sourceHtml = await readFile(path.join(root, 'scripts', 'sources', 'gajendra-thakur-samagra.htm'), 'utf8');
+  const section = sourceHtml.slice(sourceHtml.indexOf('const main=['), sourceHtml.indexOf('const search='));
+  const bases = { D: 'https://drive.google.com/file/d/', V: 'https://videha-ejournal.github.io/videha-ejournal/', A: 'https://archive.org/download/', trBase: 'https://archive.org/download/maithili_202209/' };
+  const corpus = [...section.matchAll(/item\('([^']+)'\s*,\s*([A-Za-z]+)\+'([^']+)'/g)].map(([, title, base, file]) => ({ title, file: (bases[base] || '') + file }));
+  let app = await readFile(path.join(out, 'app.js'), 'utf8');
+  const additions = corpus.map(({ title, file }) => `{section:'00 · स्थानीय PDF corpus',title:${JSON.stringify(title)},detail:'Gajendra Thakur Samagra · source shelf PDF',file:${JSON.stringify(file)}}`).join(',');
+  app = app.replace(/const gajendraPdf = /, `const gajendraCorpusBooks=[${additions}];gajendraBooks.push(...gajendraCorpusBooks.filter(candidate=>!gajendraBooks.some(existing=>existing.title===candidate.title||existing.file===candidate.file)));const gajendraPdf = `);
+  await writeFile(path.join(out, 'app.js'), app);
+};
+await augmentGajendraApp();
 const githubCatalogue = JSON.parse(await readFile(path.join(source, "data", "github-library.json"), "utf8"));
 const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
 const langAttr = (value = "") => /[\u0900-\u097F]/.test(value) ? ' lang="mai-Deva"' : "";

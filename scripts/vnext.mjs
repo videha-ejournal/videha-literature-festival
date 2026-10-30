@@ -52,7 +52,7 @@ export async function buildNext({root,out,manifest,stats,githubArchive,byTitle})
   let html=await readFile(path.join(root,'public/index.html'),'utf8');
   html=html.replace(/\{\{(\w+)\}\}/g,(_,key)=>{if(!(key in stats))throw Error(`Unknown statistic ${key}`);return stats[key];});
   const {document}=parseHTML(html);
-  const app=await readFile(path.join(root,'public/app.js'),'utf8');
+  const app=await readFile(path.join(out,'app.js'),'utf8');
   const langs=vm.runInNewContext(app.slice(app.indexOf('const langs'),app.indexOf('function togglePanel'))+';langs',{}, {timeout:1000});
   document.querySelector('#language').innerHTML=Object.entries(langs).map(([code,name])=>`<option value="${code}">${name}</option>`).join('');
   const curated=vm.runInNewContext(app.slice(app.indexOf('const parallelTomes'),app.indexOf('const covers'))+';books',{}, {timeout:1000});
