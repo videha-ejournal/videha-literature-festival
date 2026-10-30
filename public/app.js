@@ -177,7 +177,9 @@ function renderBooks(reset=false){
 }
 function renderIssues(reset=false){
   if(reset) issueLimit=30;
-  const q=$("#issueSearch").value.trim().toLowerCase(), pub=$("#publication").value, year=$("#issueYear").value;
+  const devanagariDigits="०१२३४५६७८९";
+  const normalizeIssueQuery=value=>String(value).trim().toLowerCase().replace(/[०-९]/g,d=>String(devanagariDigits.indexOf(d)));
+  const q=normalizeIssueQuery($("#issueSearch").value), pub=$("#publication").value, year=$("#issueYear").value;
   const matches=issueRecords.filter(x=>(pub==="all"||x.publication===pub)&&(year==="all"||String(x.year)===year)&&(!q||`${x.issue} ${x.title} ${x.date||""} ${x.year||""}`.toLowerCase().includes(q))).sort((a,b)=>b.issue-a.issue);
   const publicationLabel = pub === "VIDEHA" ? "archived Videha files" : pub === "SADEHA" ? "preserved Sadeha files" : "preserved publication files";
   $("#issueCount").textContent=`Showing ${Math.min(issueLimit,matches.length)} of ${matches.length} ${publicationLabel}`;
@@ -260,7 +262,7 @@ $("#rangmanchGrid").addEventListener("click",event=>{
   $("#rangmanchPlayerTitle").textContent=`Now selected: ${control.dataset.rangmanchTitle}`;
   $("#rangmanchPlayer").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth",block:"center"});
 });
-$("#issueSearch").addEventListener("input",()=>renderIssues(true)); $("#publication").addEventListener("change",()=>renderIssues(true)); $("#issueYear").addEventListener("change",()=>renderIssues(true)); $("#moreIssues").addEventListener("click",()=>{issueLimit+=30;renderIssues()});
+$("#issueSearch").addEventListener("input",()=>init().then(()=>renderIssues(true))); $("#publication").addEventListener("change",()=>init().then(()=>renderIssues(true))); $("#issueYear").addEventListener("change",()=>init().then(()=>renderIssues(true))); $("#moreIssues").addEventListener("click",()=>{issueLimit+=30;renderIssues()});
 $("#globalSearchForm").addEventListener("submit",e=>{e.preventDefault();globalSearch($("#globalSearch").value)}); $("#closeSearch").addEventListener("click",()=>{$("#searchDialog").hidden=true;document.body.style.overflow=""});
 $("#listenBtn").addEventListener("click",()=>listen()); $("#readerListen").addEventListener("click",()=>listen($(".reader-copy p:nth-of-type(2)").textContent));
 $("#translateBtn").addEventListener("click",()=>togglePanel("#translatePanel")); $("#goTranslate").addEventListener("click",openTranslate);
