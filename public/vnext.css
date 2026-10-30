@@ -9,7 +9,7 @@ a,button,input,select,summary{touch-action:manipulation}
 .section-disclosure{border-top:1px solid var(--line)}.section-disclosure>summary{padding:24px clamp(22px,7vw,110px);font:700 1.6rem 'Source Serif 4',serif;color:var(--leaf);background:var(--cream)}.permanent-link{padding:8px clamp(22px,7vw,110px)}
 .page-title,.static-records{margin:30px auto;padding:0 24px;max-width:1200px}.static-records li{margin-bottom:14px;overflow-wrap:anywhere}.static-records a{line-height:1.8}.static-records ol{padding-left:24px}
 .search-scopes{display:flex!important;flex-wrap:wrap;gap:8px!important;border:0;padding:12px 0;align-items:center}.search-scopes legend{font-weight:700}.search-scopes button{border:1px solid var(--leaf);border-radius:24px;background:var(--cream);color:var(--leaf);padding:8px 14px}.search-scopes button[aria-pressed="true"]{background:var(--leaf);color:white}.search-scopes select{max-width:100%;width:auto}.search-scopes label{display:block!important}
-.utility .language-link{color:#fff;display:inline-flex;align-items:center;min-height:44px;padding:8px}
+.utility .language-link{color:#fff;display:inline-flex;align-items:center;min-height:44px;padding:8px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .search-dialog-card{overflow-wrap:anywhere}.dialog-close{position:sticky;top:0;float:right;background:var(--paper);z-index:1;min-width:44px}
 .cover-card img{aspect-ratio:2/3;object-fit:contain}.hero-art img{aspect-ratio:1;object-fit:contain}.brand-logo,.footer-brand img{aspect-ratio:1;object-fit:contain}
 iframe{max-width:100%;aspect-ratio:16/9} section,[id]{scroll-margin-top:150px}.book-card,.issue-card,.world-genre{content-visibility:auto;contain-intrinsic-size:auto 250px}

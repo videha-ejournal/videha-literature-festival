@@ -213,6 +213,7 @@ let initPromise;
 function init(){ return initPromise ||= loadData(); }
 async function loadData(){
   renderCovers(); renderRangmanch(); renderGajendraShelf();
+  if(!$("#language").options.length) Object.entries(langs).forEach(([code,name])=>$("#language").insertAdjacentHTML("beforeend",`<option value="${code}">${name}</option>`));
 
   try{
     const pothi=await fetch(new URL(`data/pothi.json?v=${encodeURIComponent(archiveMeta.generated||"")}`, import.meta.url),{cache:"no-store"}).then(r=>r.json());
