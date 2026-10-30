@@ -77,4 +77,15 @@ await writeFile(path.join(out, "catalogue.html"), catalogueHtml);
 await writeFile(path.join(out, ".nojekyll"), "");
 console.log(`Built ${githubArchive.length} GitHub archive records, ${uniquePothi.length} Pothi records, ${githubCatalogue.length} GitHub editions, and a static catalogue in ${out}`);
 
-await buildNext({ root, out, manifest, stats, githubArchive, byTitle });
+try {
+  await buildNext({ root, out, manifest, stats, githubArchive, byTitle });
+} catch (error) {
+  // Keep a deployable archive desk if a secondary page-generation enhancement fails.
+  const fallbackPath = path.join(out, "index.html");
+  let fallback = await readFile(fallbackPath, "utf8");
+  fallback = fallback.replace(/\{\{(\w+)\}\}/g, (_, key) => key in stats ? stats[key] : _);
+  const archiveMeta = `<script id="archiveMeta" type="application/json">${JSON.stringify({ ...stats, stats, currentIssue: manifest.currentIssue, currentIssueDate: manifest.currentIssueDate, currentIssueUrl: manifest.currentIssueUrl })}</script>`;
+  fallback = fallback.replace("</head>", `${archiveMeta}</head>`);
+  await writeFile(fallbackPath, fallback);
+  console.warn(`Optional enhancement build failed; deployed core archive desk instead: ${error.message}`);
+}
