@@ -183,7 +183,7 @@ function renderIssues(reset=false){
   const matches=issueRecords.filter(x=>(pub==="all"||x.publication===pub)&&(year==="all"||String(x.year)===year)&&(!q||`${x.issue} ${x.title} ${x.date||""} ${x.year||""}`.toLowerCase().includes(q))).sort((a,b)=>b.issue-a.issue);
   const publicationLabel = pub === "VIDEHA" ? "archived Videha files" : pub === "SADEHA" ? "preserved Sadeha files" : "preserved publication files";
   $("#issueCount").textContent=`Showing ${Math.min(issueLimit,matches.length)} of ${matches.length} ${publicationLabel}`;
-  $("#issueGrid").innerHTML=matches.slice(0,issueLimit).map(x=>`<article class="issue-card"><span class="issue-no">${x.publication} · ${x.issue}${x.version?` · VERSION ${x.version}`:""}</span><h3>${x.title}</h3>${x.date?`<time datetime="${x.dateISO||""}">${x.date}</time>`:""}<a href="${x.source}" target="_blank" rel="noopener">Read archived issue ↗</a></article>`).join("") || "<p>No issues match those filters.</p>";
+  $("#issueGrid").innerHTML=matches.slice(0,issueLimit).map(x=>`<article class="issue-card"><span class="issue-no">${x.publication} · ${x.issue}${x.version?` · VERSION ${x.version}`:""}</span><h3>${x.title}</h3><time datetime="${x.dateISO||""}">${x.date||"Date not recorded"}</time><a href="${x.source}" target="_blank" rel="noopener">Read archived issue ↗</a></article>`).join("") || "<p>No issues match those filters.</p>";
   $("#moreIssues").hidden=issueLimit>=matches.length;
 }
 
