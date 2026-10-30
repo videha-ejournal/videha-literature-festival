@@ -324,7 +324,7 @@ async function globalSearch(query, reset=true){
   if(opening)$('#closeSearch').focus();else $('#dialogScope').focus();
 }
 function syncSearchControls(){
-  $$('[data-scope]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.scope===scope));$('#searchSort').value=searchOrder;
+  $$('[data-scope]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.scope===scope));if($('#searchSort'))$('#searchSort').value=searchOrder;
 }
 function clearSearch(){
   searchTicket++;scope='all';searchOrder='relevance';$('#globalSearch').value='';syncSearchControls();closeResults();
@@ -338,7 +338,7 @@ function setupNext(){
   searchOrder=['title','newest','oldest'].includes(params.get('sort'))?params.get('sort'):'relevance';syncSearchControls();
   $$('[data-scope]').forEach(b=>b.addEventListener('click',()=>{scope=b.dataset.scope;syncSearchControls();globalSearch($('#globalSearch').value);}));
   $('#searchSort').addEventListener('change',e=>{searchOrder=e.target.value;globalSearch($('#globalSearch').value);});
-  $('#clearAll').addEventListener('click',clearSearch);$('#closeSearch').addEventListener('click',closeResults);
+  $('#clearAll')?.addEventListener('click',clearSearch);$('#closeSearch')?.addEventListener('click',closeResults);
   document.addEventListener('keydown',event=>{
     if($('#searchDialog').hidden)return;
     if(event.key==='Escape'){event.preventDefault();closeResults();}
