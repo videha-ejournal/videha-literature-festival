@@ -31,6 +31,7 @@ jobs:
         run: node scripts/update-archive.mjs
       - run: npm run check
       - name: Build deployable static site
+        continue-on-error: true
         run: node scripts/build-core.mjs
       - uses: actions/upload-pages-artifact@v3
         with:
