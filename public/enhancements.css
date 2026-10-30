@@ -15,3 +15,8 @@ button,.button,.utility a,.language-switch a,.search-scope button,.follow-videha
 @media(max-width:420px){.current-issue-card{margin-inline:10px;padding:16px}.current-issue-actions a{width:100%}.search-scope button{flex:1 1 46%}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
 @media(forced-colors:active){.current-issue-card,.follow-videha,.search-tools{border:1px solid CanvasText}.search-scope button.active{forced-color-adjust:auto}}
+
+/* Keep the long festival link collection folded behind the Menu control. */
+.site-header nav#primary-nav{display:none}
+.site-header .menu-toggle{display:block}
+.site-header nav#primary-nav.open{display:flex;position:absolute;left:0;right:0;top:70px;background:#122b23;padding:20px;flex-direction:column;z-index:60}
