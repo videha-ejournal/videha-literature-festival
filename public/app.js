@@ -87,7 +87,7 @@ const gajendraBooks = [
   {section:"12 · अनुवाद",title:"गजेन्द्र ठाकुर समग्र · अनुवाद खण्ड",detail:"Other-language to Maithili and Maithili to English translations",file:"GAJENDRA_THAKUR_SAMAGRA_ANUVAD_KHAND.pdf"},
   {section:"12 · अनुवाद",title:"विदेह–सदेह 1–37",detail:"Selected and edited periodical archive",file:"GAJENDRA_THAKUR_SAMAGRA_Videha_Sadeha_1-37.pdf"},
 ];
-const gajendraPdf = file => `https://raw.githubusercontent.com/videha-ejournal/videha-ejournal/main/${encodeURIComponent(file)}`;
+const gajendraPdf = file => /^https?:\/\//i.test(file) ? file : `https://raw.githubusercontent.com/videha-ejournal/videha-ejournal/main/${encodeURIComponent(file)}`;
 function renderGajendraShelf(){
   const groups=[...new Set(gajendraBooks.map(book=>book.section))];
   $("#gajendraShelf").innerHTML=groups.map(section=>`<section class="gajendra-group" aria-labelledby="gajendra-${section.slice(0,2)}"><h4 id="gajendra-${section.slice(0,2)}">${section}</h4><div class="gajendra-grid">${gajendraBooks.filter(book=>book.section===section).map((book,index)=>`<article class="gajendra-card"><h5${languageAttribute(book.title)}>${escapeHTML(book.title)}</h5><p>${escapeHTML(book.detail)}</p><a href="${gajendraPdf(book.file)}" target="_blank" rel="noopener" download>Read PDF ↗</a></article>`).join("")}</div></section>`).join("");
