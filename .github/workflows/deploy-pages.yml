@@ -34,7 +34,7 @@ jobs:
       - run: npm run check
       - name: Build deployable static site
         continue-on-error: true
-        run: node scripts/build-core.mjs
+        run: node scripts/ensure-home-init.mjs && node scripts/build-core.mjs
       - name: Inject complete Gajendra Section 00 corpus
         run: node scripts/inject-full-gajendra-corpus.mjs
       - name: Build permanent accessibility routes
