@@ -1,0 +1,10 @@
+import {readFile,writeFile,readdir,rm} from 'node:fs/promises';
+const files=(await readdir('public/assets/gajendra-covers')).filter(name=>name.startsWith('0344-'));
+for(const name of files) await rm(`public/assets/gajendra-covers/${name}`);
+const appFile='public/app.js'; let app=await readFile(appFile,'utf8');
+const names=(await readdir('public/assets/gajendra-covers')).sort();
+const next=`const extraGajendraCovers = ${JSON.stringify(names)}.map((name) => ["gajendra-covers/"+name, name.replace(/^[0-9]+-/,'').replace(/[_-]+/g,' ').replace(/\\.[^.]+$/,'')]);\n`;
+app=app.slice(0,app.indexOf('const extraGajendraCovers'))+next; await writeFile(appFile,app);
+const cssFile='public/styles.css'; let css=await readFile(cssFile,'utf8');
+css+='\n@supports (-webkit-touch-callout:none){@media(max-width:700px){.site-header{backdrop-filter:none;-webkit-backdrop-filter:none}.cover-rail{overflow-x:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x}.utility{position:relative;z-index:80}.utility button{touch-action:manipulation}}}\n';
+await writeFile(cssFile,css);
