@@ -362,6 +362,9 @@ function legacyGlobalSearch(q){
   $("#searchDialog").hidden=false; document.body.style.overflow="hidden"; $("#closeSearch").focus();
 }
 
+/* Defer the heavy cover and Gajendra DOM work until the first frame is usable. */
+function renderCovers(limit=24){ const assetRoot=location.pathname.includes("/mai/")?"../":""; const allCovers=[...covers,...extraGajendraCovers]; const rail=$("#coverRail"); const render=items=>items.map(([src,title])=>`<article class="cover-card"><img src="${new URL(assetRoot+"assets/"+encodeURI(src),location.href).href}" alt="Book cover: ${title}" loading="lazy"><span>${title}</span></article>`).join(""); rail.innerHTML=render(allCovers.slice(0,limit)); if(limit<allCovers.length){const add=()=>rail.insertAdjacentHTML("beforeend",render(allCovers.slice(limit))); if("requestIdleCallback" in window)requestIdleCallback(add,{timeout:1200});else setTimeout(add,200);}}
+function renderGajendraShelf(limit=40){ const groups=[...new Set(gajendraBooks.map(book=>book.section))]; const shelf=$("#gajendraShelf"); const render=items=>groups.map(section=>{const sectionItems=items.filter(book=>book.section===section);return sectionItems.length?`<section class="gajendra-group" aria-labelledby="gajendra-${section.slice(0,2)}"><h4 id="gajendra-${section.slice(0,2)}">${section}</h4><div class="gajendra-grid">${sectionItems.map(book=>`<article class="gajendra-card"><h5${languageAttribute(book.title)}>${escapeHTML(book.title)}</h5><p>${escapeHTML(book.detail)}</p><a href="${gajendraPdf(book.file)}" target="_blank" rel="noopener" download>Read PDF ↗</a></article>`).join("")}</div></section>`:''}).join(''); shelf.innerHTML=render(gajendraBooks.slice(0,limit)); if(limit<gajendraBooks.length){const add=()=>shelf.innerHTML=render(gajendraBooks); if("requestIdleCallback" in window)requestIdleCallback(add,{timeout:1600});else setTimeout(add,300);}}
 let initPromise;
 function init(){ return initPromise ||= loadData(); }
 async function loadData(){
