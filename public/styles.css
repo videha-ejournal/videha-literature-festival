@@ -35,3 +35,18 @@
 @media(max-width:700px){.utility{gap:5px}.utility button{padding:7px 8px!important;min-width:42px;min-height:42px}.cover-rail{grid-auto-columns:34vw}.cover-card img{max-height:260px;object-fit:contain}}
 
 @supports (-webkit-touch-callout:none){@media(max-width:700px){.site-header{backdrop-filter:none;-webkit-backdrop-filter:none}.cover-rail{overflow-x:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x}.utility{position:relative;z-index:80}.utility button{touch-action:manipulation}}}
+
+/* iOS Safari: avoid composited fixed layers that can blur the page or immediately
+   relinquish the touch gesture after opening a control. Keep the mobile menu in
+   normal document flow and make dialogs independently scrollable. */
+@supports (-webkit-touch-callout:none){@media(max-width:700px){
+  html{scroll-behavior:auto;-webkit-text-size-adjust:100%}
+  body{overflow-x:hidden}
+  .site-header{position:relative;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;transform:none!important}
+  .site-header nav{position:absolute;top:100%;max-height:calc(100vh - 74px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .site-header nav.open{z-index:90}
+  .search-dialog{position:absolute;min-height:100%;height:auto;-webkit-overflow-scrolling:touch}
+  .search-dialog-card{margin:0 auto;min-height:0}
+  .panel{position:absolute;max-height:calc(100vh - 100px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .menu-toggle,.utility button,.utility a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+}}
