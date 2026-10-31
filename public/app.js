@@ -256,7 +256,7 @@ const gajendraDesktopCovers = [
 ];
 // The canonical Gajendra covers live in the dedicated asset subfolder.
 gajendraDesktopCovers.forEach((cover) => { cover[0] = `gajendra-covers/${cover[0]}`; });
-const covers = [...baseCovers, ...gajendraDesktopCovers, ...extraGajendraCovers];
+const covers = [...baseCovers, ...gajendraDesktopCovers];
 
 const videoPlaylists = "https://www.youtube.com/@videha_ejournal/playlists";
 const elearningPlaylists = "https://www.youtube.com/@videha-elearning/playlists";
