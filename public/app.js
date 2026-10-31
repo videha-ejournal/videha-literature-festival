@@ -366,15 +366,16 @@ let initPromise;
 function init(){ return initPromise ||= loadData(); }
 async function loadData(){
   renderCovers(); renderRangmanch(); renderGajendraShelf();
+  const dataRoot=location.pathname.includes("/mai/")?"../":"";
   if(!$("#language").options.length) Object.entries(langs).forEach(([code,name])=>$("#language").insertAdjacentHTML("beforeend",`<option value="${code}">${name}</option>`));
 
   try{
-    const pothi=await fetch(`data/pothi.json?v=${encodeURIComponent(archiveMeta.generated||"")}`,{cache:"no-store"}).then(r=>r.json());
+    const pothi=await fetch(`${dataRoot}data/pothi.json?v=${encodeURIComponent(archiveMeta.generated||"")}`,{cache:"no-store"}).then(r=>r.json());
     pothi.forEach(x=>{const category=/गजेन्द्र ठाकुर|Gajendra Thakur/i.test(x.author)?"Gajendra Thakur archive":"Videha Pothi";books.push({title:x.title,category,detail:x.author||"Videha Pothi archive record",author:x.author||"Author not stated in source catalogue",url:x.url||"https://www.videha.co.in/pothi.htm",source:"pothi"});});
     $("#pothiCount").textContent=pothi.length.toLocaleString("en-IN");
   }catch{}
   try{
-    const githubBooks=await fetch(`data/github-library.json?v=${encodeURIComponent(archiveMeta.generated||"")}`,{cache:"no-store"}).then(r=>r.json());
+    const githubBooks=await fetch(`${dataRoot}data/github-library.json?v=${encodeURIComponent(archiveMeta.generated||"")}`,{cache:"no-store"}).then(r=>r.json());
     githubBooks.forEach(x=>books.push({...x,author:"GitHub catalogue · author not encoded",source:"github"}));
     $("#githubCount").textContent=githubBooks.length.toLocaleString("en-IN");
   }catch{}
@@ -384,7 +385,7 @@ async function loadData(){
   [...new Set(books.map(b=>b.category))].sort().forEach(c=>$("#bookCategory").insertAdjacentHTML("beforeend",`<option>${c}</option>`));
   renderBooks();
   try{
-    const data=await fetch(`data/archive.json?v=${encodeURIComponent(archiveMeta.generated||"")}`,{cache:"no-store"}).then(r=>r.json()); issueRecords=data.archive; $("#videhaCount").textContent=data.stats.videhaIssues; $("#lastUpdated").textContent=`Archive data updated ${new Date(data.generated).toLocaleDateString("en-IN",{dateStyle:"medium"})}`;
+    const data=await fetch(`${dataRoot}data/archive.json?v=${encodeURIComponent(archiveMeta.generated||"")}`,{cache:"no-store"}).then(r=>r.json()); issueRecords=data.archive; $("#videhaCount").textContent=data.stats.videhaIssues; $("#lastUpdated").textContent=`Archive data updated ${new Date(data.generated).toLocaleDateString("en-IN",{dateStyle:"medium"})}`;
     [...new Set(issueRecords.map(x=>x.year).filter(Boolean))].sort((a,b)=>b-a).forEach(y=>$("#issueYear").insertAdjacentHTML("beforeend",`<option>${y}</option>`)); renderIssues();
   }catch(e){$("#issueCount").textContent="Archive index could not be loaded.";}
 
