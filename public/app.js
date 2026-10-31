@@ -305,6 +305,7 @@ let bookLimit = 24;
 let issueLimit = 30;
 let currentBookSource = "all";
 let currentBookView = "shelf";
+let gajendraGenerated = false;
 
 function renderCovers(){ const assetRoot=location.pathname.includes("/mai/")?"../":""; const allCovers=[...covers,...extraGajendraCovers]; $("#coverRail").innerHTML = allCovers.map(([src,title]) => `<article class="cover-card"><img src="${new URL(assetRoot+"assets/"+encodeURI(src),location.href).href}" alt="Book cover: ${title}" loading="lazy"><span>${title}</span></article>`).join(""); }
 function renderRangmanch(group="all"){
@@ -368,7 +369,7 @@ function renderGajendraShelfDeferred(limit=40){ const groups=[...new Set(gajendr
 let initPromise;
 function init(){ return initPromise ||= loadData(); }
 async function loadData(){
-  renderCoversDeferred(); renderRangmanch(); renderGajendraShelfDeferred();
+  renderCoversDeferred(); renderRangmanch();
   const dataRoot=location.pathname.includes("/mai/")?"../":"";
   if(!$("#language").options.length) Object.entries(langs).forEach(([code,name])=>$("#language").insertAdjacentHTML("beforeend",`<option value="${code}">${name}</option>`));
 
@@ -393,6 +394,17 @@ async function loadData(){
   }catch(e){$("#issueCount").textContent="Archive index could not be loaded.";}
 
 }
+
+function ensureGajendraList(){
+  if(gajendraGenerated)return;
+  gajendraGenerated=true;
+  renderGajendraShelfDeferred();
+  $("#gajendraLoadNote").textContent=document.documentElement.lang==='mai'?'समग्रक सूची बनि गेल।':'Gajendra Thakur Samagra list generated.';
+}
+$("#gajendraSearch")?.addEventListener("focus",ensureGajendraList);
+$("#gajendraSearch")?.addEventListener("click",ensureGajendraList);
+$("#gajendraSearch")?.addEventListener("input",()=>{ensureGajendraList();const q=$("#gajendraSearch").value.trim().toLocaleLowerCase();$$("#gajendraShelf .gajendra-card").forEach(card=>{card.hidden=!!q&&!card.textContent.toLocaleLowerCase().includes(q);});});
+$("#gajendraClear")?.addEventListener("click",()=>{$("#gajendraSearch").value="";ensureGajendraList();$$("#gajendraShelf .gajendra-card").forEach(card=>{card.hidden=false;});$("#gajendraSearch").focus();});
 
 $("#bookSearch").addEventListener("input",()=>renderBooks(true)); $("#bookCategory").addEventListener("change",()=>renderBooks(true)); $("#clearBooks").addEventListener("click",()=>{$("#bookSearch").value="";$("#bookCategory").value="all";renderBooks(true)}); $("#moreBooks").addEventListener("click",()=>{bookLimit+=24;renderBooks()});
 $$('[data-book-source]').forEach(button=>button.addEventListener("click",()=>{currentBookSource=button.dataset.bookSource;$$('[data-book-source]').forEach(item=>item.classList.toggle("active",item===button));renderBooks(true)}));
