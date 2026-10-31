@@ -256,7 +256,7 @@ const gajendraDesktopCovers = [
 ];
 // The canonical Gajendra covers live in the dedicated asset subfolder.
 gajendraDesktopCovers.forEach((cover) => { cover[0] = `gajendra-covers/${cover[0]}`; });
-const covers = [...baseCovers, ...gajendraDesktopCovers];
+const covers = [...baseCovers];
 
 const videoPlaylists = "https://www.youtube.com/@videha_ejournal/playlists";
 const elearningPlaylists = "https://www.youtube.com/@videha-elearning/playlists";
@@ -306,7 +306,7 @@ let issueLimit = 30;
 let currentBookSource = "all";
 let currentBookView = "shelf";
 
-function renderCovers(){ const assetRoot=location.pathname.includes("/mai/")?"../":""; $("#coverRail").innerHTML = covers.map(([src,title]) => `<article class="cover-card"><img src="${new URL(assetRoot+"assets/"+encodeURI(src),location.href).href}" alt="Book cover: ${title}" loading="lazy"><span>${title}</span></article>`).join(""); }
+function renderCovers(){ const assetRoot=location.pathname.includes("/mai/")?"../":""; const allCovers=[...covers,...extraGajendraCovers]; $("#coverRail").innerHTML = allCovers.map(([src,title]) => `<article class="cover-card"><img src="${new URL(assetRoot+"assets/"+encodeURI(src),location.href).href}" alt="Book cover: ${title}" loading="lazy"><span>${title}</span></article>`).join(""); }
 function renderRangmanch(group="all"){
   const records=group==="all"?rangmanchMedia:rangmanchMedia.filter(item=>item.group===group);
   $("#rangmanchCount").textContent=`${records.length} source-linked records shown`;
