@@ -391,7 +391,7 @@ async function loadData(){
   try{
     const data=await fetch(`${dataRoot}data/archive.json?v=${encodeURIComponent(archiveMeta.generated||"")}`,{cache:"no-store"}).then(r=>r.json()); issueRecords=data.archive; $("#videhaCount").textContent=data.stats.videhaIssues; $("#lastUpdated").textContent=`Archive data updated ${new Date(data.generated).toLocaleDateString("en-IN",{dateStyle:"medium"})}`;
     [...new Set(issueRecords.map(x=>x.year).filter(Boolean))].sort((a,b)=>b-a).forEach(y=>$("#issueYear").insertAdjacentHTML("beforeend",`<option>${y}</option>`)); renderIssues();
-  }catch(e){$("#issueCount").textContent="Archive index could not be loaded.";}
+  }catch(e){$("#issueCount").textContent=document.documentElement.lang==='mai'?'पहिल क्लिकपर अभिलेख-सूची बनत।':'The archive list will be generated on first click.';}
 
 }
 
