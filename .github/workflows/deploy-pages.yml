@@ -30,7 +30,7 @@ jobs:
         run: npm ci
       - name: Synchronize current issue and archive manifest
         continue-on-error: true
-        run: node scripts/update-archive.mjs
+        run: node scripts/update-archive.mjs && node scripts/sync-public-archive.mjs
       - run: npm run check
       - name: Build deployable static site
         continue-on-error: true
